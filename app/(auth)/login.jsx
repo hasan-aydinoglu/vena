@@ -14,8 +14,7 @@ export default function Login() {
 
   return (
     <View style={{ flex: 1, justifyContent: "center", padding: 24, backgroundColor: "#fff" }}>
-      {/* assets/logo.png eklediğinde aşağıdaki satırın yorumunu kaldırabilirsin */}
-      {/* <Image source={require("../../assets/logo.png")} style={{ width: 100, height: 100, alignSelf: "center", marginBottom: 28 }} /> */}
+      
       <Text style={{ fontSize: 22, fontWeight: "700", textAlign: "center", marginBottom: 12 }}>VENA</Text>
 
       <TextInput
