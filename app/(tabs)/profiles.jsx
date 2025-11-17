@@ -12,6 +12,14 @@ import {
 } from "react-native";
 import { useProfile } from "../../src/store/profile.js";
 
+// 🔹 İLİŞKİ TÜRÜ SEÇENEKLERİ
+const RELATIONSHIP_OPTIONS = [
+  { id: "life_partner", label: "Life partner" },
+  { id: "long_term", label: "Long-term relationship" },
+  { id: "short_term_fun", label: "Short-term fun" },
+  { id: "casual_dating", label: "Casual dating" },
+];
+
 export default function ProfileScreen() {
   const { profile, updateProfile } = useProfile();
   const [open, setOpen] = useState(false);
@@ -23,6 +31,10 @@ export default function ProfileScreen() {
   const [bio, setBio] = useState(profile.bio);
   const [interests, setInterests] = useState(profile.interests.join(", "));
   const [photo, setPhoto] = useState(profile.photo);
+  // 🔹 yeni alan: ilişki tipi draft'ı
+  const [relationshipType, setRelationshipType] = useState(
+    profile.relationshipType || ""
+  );
 
   const initials = useMemo(() => {
     const n = (name || "User").trim().split(" ");
@@ -39,6 +51,7 @@ export default function ProfileScreen() {
     setBio(profile.bio);
     setInterests(profile.interests.join(", "));
     setPhoto(profile.photo);
+    setRelationshipType(profile.relationshipType || ""); // 🔹 ekledik
     setOpen(true);
   };
 
@@ -72,31 +85,78 @@ export default function ProfileScreen() {
       bio,
       interests: parsedInterests,
       photo,
+      // 🔹 store'a da yaz
+      relationshipType,
     });
     setOpen(false);
   };
 
+  // Profilde göstermek için label bul
+  const relationshipLabel = profile.relationshipType
+    ? RELATIONSHIP_OPTIONS.find((o) => o.id === profile.relationshipType)?.label
+    : null;
+
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#fff" }} contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: "#fff" }}
+      contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+    >
       {/* HEADER — tap to edit */}
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 16,
+        }}
+      >
         <Text style={{ fontSize: 24, fontWeight: "700" }}>My Profile</Text>
-        <TouchableOpacity onPress={openEditor} style={{ paddingVertical: 8, paddingHorizontal: 14, borderRadius: 10, backgroundColor: "black" }}>
+        <TouchableOpacity
+          onPress={openEditor}
+          style={{
+            paddingVertical: 8,
+            paddingHorizontal: 14,
+            borderRadius: 10,
+            backgroundColor: "black",
+          }}
+        >
           <Text style={{ color: "#fff", fontWeight: "600" }}>Edit</Text>
         </TouchableOpacity>
       </View>
 
       {/* Avatar + Name (PRESSABLE AREA like Hinge) */}
-      <Pressable onPress={openEditor} style={{ alignItems: "center", marginBottom: 18 }}>
+      <Pressable
+        onPress={openEditor}
+        style={{ alignItems: "center", marginBottom: 18 }}
+      >
         <View style={{ position: "relative" }}>
           {profile.photo ? (
             <Image
               source={{ uri: profile.photo }}
-              style={{ width: 120, height: 120, borderRadius: 60, borderWidth: 3, borderColor: "#8b5cf6" /* purple ring */ }}
+              style={{
+                width: 120,
+                height: 120,
+                borderRadius: 60,
+                borderWidth: 3,
+                borderColor: "#8b5cf6" /* purple ring */,
+              }}
             />
           ) : (
-            <View style={{ width: 120, height: 120, borderRadius: 60, backgroundColor: "#111", alignItems: "center", justifyContent: "center" }}>
-              <Text style={{ color: "#fff", fontSize: 36, fontWeight: "700" }}>{initials}</Text>
+            <View
+              style={{
+                width: 120,
+                height: 120,
+                borderRadius: 60,
+                backgroundColor: "#111",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{ color: "#fff", fontSize: 36, fontWeight: "700" }}
+              >
+                {initials}
+              </Text>
             </View>
           )}
           {/* small pencil badge */}
@@ -119,7 +179,9 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <Text style={{ fontSize: 22, fontWeight: "700", marginTop: 12 }}>{profile.name}</Text>
+        <Text style={{ fontSize: 22, fontWeight: "700", marginTop: 12 }}>
+          {profile.name}
+        </Text>
       </Pressable>
 
       {/* Basic info (read-only) */}
@@ -127,6 +189,34 @@ export default function ProfileScreen() {
         <Row label="Age" value={String(profile.age)} />
         <Row label="Location" value={profile.location} />
       </View>
+
+      {/* Looking for (relationship type) */}
+      {relationshipLabel ? (
+        <View style={{ marginBottom: 18 }}>
+          <Text style={{ fontWeight: "700", marginBottom: 8 }}>
+            Looking for
+          </Text>
+          <View
+            style={{
+              alignSelf: "flex-start",
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: 12,
+              backgroundColor: "#ffe8f0",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 13,
+                fontWeight: "600",
+                color: "#ff2e63",
+              }}
+            >
+              {relationshipLabel}
+            </Text>
+          </View>
+        </View>
+      ) : null}
 
       {/* Bio */}
       <View style={{ marginBottom: 18 }}>
@@ -138,33 +228,96 @@ export default function ProfileScreen() {
       <Text style={{ fontWeight: "700", marginBottom: 8 }}>Interests</Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
         {profile.interests.map((tag) => (
-          <View key={tag} style={{ paddingVertical: 6, paddingHorizontal: 12, backgroundColor: "#f1f1f1", borderRadius: 999 }}>
+          <View
+            key={tag}
+            style={{
+              paddingVertical: 6,
+              paddingHorizontal: 12,
+              backgroundColor: "#f1f1f1",
+              borderRadius: 999,
+            }}
+          >
             <Text>{tag}</Text>
           </View>
         ))}
       </View>
 
       {/* EDIT MODAL */}
-      <Modal visible={open} animationType="slide" presentationStyle="pageSheet" onRequestClose={onCancel}>
-        <ScrollView style={{ flex: 1, backgroundColor: "#fff" }} contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
-          <Text style={{ fontSize: 22, fontWeight: "700", marginBottom: 16 }}>Edit Profile</Text>
+      <Modal
+        visible={open}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={onCancel}
+      >
+        <ScrollView
+          style={{ flex: 1, backgroundColor: "#fff" }}
+          contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+        >
+          <Text
+            style={{ fontSize: 22, fontWeight: "700", marginBottom: 16 }}
+          >
+            Edit Profile
+          </Text>
 
           {/* Photo */}
           <Text style={{ fontWeight: "600", marginBottom: 8 }}>Photo</Text>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 14 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 12,
+              marginBottom: 14,
+            }}
+          >
             {photo ? (
-              <Image source={{ uri: photo }} style={{ width: 88, height: 88, borderRadius: 16, borderWidth: 1, borderColor: "#eee" }} />
+              <Image
+                source={{ uri: photo }}
+                style={{
+                  width: 88,
+                  height: 88,
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderColor: "#eee",
+                }}
+              />
             ) : (
-              <View style={{ width: 88, height: 88, borderRadius: 16, backgroundColor: "#f3f3f3", alignItems: "center", justifyContent: "center" }}>
+              <View
+                style={{
+                  width: 88,
+                  height: 88,
+                  borderRadius: 16,
+                  backgroundColor: "#f3f3f3",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <Text>no photo</Text>
               </View>
             )}
             <View style={{ flexDirection: "row", gap: 8 }}>
-              <TouchableOpacity onPress={pickImage} style={{ backgroundColor: "black", paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10 }}>
-                <Text style={{ color: "#fff", fontWeight: "600" }}>Add photo</Text>
+              <TouchableOpacity
+                onPress={pickImage}
+                style={{
+                  backgroundColor: "black",
+                  paddingVertical: 10,
+                  paddingHorizontal: 14,
+                  borderRadius: 10,
+                }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "600" }}>
+                  Add photo
+                </Text>
               </TouchableOpacity>
               {photo ? (
-                <TouchableOpacity onPress={() => setPhoto("")} style={{ backgroundColor: "#eee", paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10 }}>
+                <TouchableOpacity
+                  onPress={() => setPhoto("")}
+                  style={{
+                    backgroundColor: "#eee",
+                    paddingVertical: 10,
+                    paddingHorizontal: 14,
+                    borderRadius: 10,
+                  }}
+                >
                   <Text>Remove</Text>
                 </TouchableOpacity>
               ) : null}
@@ -173,15 +326,28 @@ export default function ProfileScreen() {
 
           {/* Name */}
           <Label>Name</Label>
-          <Input value={name} onChangeText={setName} placeholder="Your name" />
+          <Input
+            value={name}
+            onChangeText={setName}
+            placeholder="Your name"
+          />
 
           {/* Age */}
           <Label>Age</Label>
-          <Input value={age} onChangeText={setAge} keyboardType="number-pad" placeholder="Age" />
+          <Input
+            value={age}
+            onChangeText={setAge}
+            keyboardType="number-pad"
+            placeholder="Age"
+          />
 
           {/* Location */}
           <Label>Location</Label>
-          <Input value={location} onChangeText={setLocation} placeholder="City, Country" />
+          <Input
+            value={location}
+            onChangeText={setLocation}
+            placeholder="City, Country"
+          />
 
           {/* Bio */}
           <Label>About me</Label>
@@ -195,14 +361,82 @@ export default function ProfileScreen() {
 
           {/* Interests (comma-separated) */}
           <Label>Interests (comma separated)</Label>
-          <Input value={interests} onChangeText={setInterests} placeholder="Movies, Running, Photography" />
+          <Input
+            value={interests}
+            onChangeText={setInterests}
+            placeholder="Movies, Running, Photography"
+          />
+
+          {/* 🔹 Relationship Type Selector */}
+          <Label>What are you looking for?</Label>
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              gap: 8,
+              marginBottom: 4,
+            }}
+          >
+            {RELATIONSHIP_OPTIONS.map((option) => {
+              const selected = relationshipType === option.id;
+              return (
+                <TouchableOpacity
+                  key={option.id}
+                  onPress={() => setRelationshipType(option.id)}
+                  style={{
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                    borderRadius: 20,
+                    borderWidth: 1,
+                    borderColor: selected ? "#ff4b6a" : "#ccc",
+                    backgroundColor: selected ? "#ffe8f0" : "transparent",
+                    marginRight: 4,
+                    marginBottom: 4,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: selected ? "600" : "400",
+                      color: selected ? "#ff2e63" : "#333",
+                    }}
+                  >
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
 
           {/* Actions */}
-          <View style={{ flexDirection: "row", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>
-            <TouchableOpacity onPress={onCancel} style={{ paddingVertical: 12, paddingHorizontal: 16, borderRadius: 10, backgroundColor: "#eee" }}>
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 10,
+              justifyContent: "flex-end",
+              marginTop: 20,
+            }}
+          >
+            <TouchableOpacity
+              onPress={onCancel}
+              style={{
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                borderRadius: 10,
+                backgroundColor: "#eee",
+              }}
+            >
               <Text style={{ fontWeight: "600" }}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={onSave} style={{ paddingVertical: 12, paddingHorizontal: 16, borderRadius: 10, backgroundColor: "black" }}>
+            <TouchableOpacity
+              onPress={onSave}
+              style={{
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                borderRadius: 10,
+                backgroundColor: "black",
+              }}
+            >
               <Text style={{ color: "#fff", fontWeight: "600" }}>Save</Text>
             </TouchableOpacity>
           </View>
@@ -215,7 +449,16 @@ export default function ProfileScreen() {
 /* small ui helpers */
 function Row({ label, value }) {
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#f2f2f2" }}>
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: "#f2f2f2",
+      }}
+    >
       <Text style={{ opacity: 0.7 }}>{label}</Text>
       <Text style={{ fontWeight: "600" }}>{value}</Text>
     </View>
@@ -223,7 +466,11 @@ function Row({ label, value }) {
 }
 
 function Label({ children }) {
-  return <Text style={{ fontWeight: "600", marginTop: 10, marginBottom: 6 }}>{children}</Text>;
+  return (
+    <Text style={{ fontWeight: "600", marginTop: 10, marginBottom: 6 }}>
+      {children}
+    </Text>
+  );
 }
 
 function Input(props) {
@@ -231,7 +478,13 @@ function Input(props) {
     <TextInput
       {...props}
       style={[
-        { borderWidth: 1, borderColor: "#ddd", borderRadius: 10, padding: 12, backgroundColor: "#fff" },
+        {
+          borderWidth: 1,
+          borderColor: "#ddd",
+          borderRadius: 10,
+          padding: 12,
+          backgroundColor: "#fff",
+        },
         props.style,
       ]}
     />

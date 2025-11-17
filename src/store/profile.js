@@ -1,14 +1,20 @@
 import { create } from "zustand";
 
+const defaultProfile = {
+  name: "User",
+  age: 25,
+  location: "",
+  bio: "",
+  interests: [],
+  photo: null,
+  // 🔹 bunu ekle
+  relationshipType: "", // "long_term", "short_term_fun" vs.
+};
+
 export const useProfile = create((set) => ({
-  profile: {
-    name: "Demo User",
-    age: 25,
-    location: "Istanbul, Türkiye",
-    bio: "Coffee, galleries, long walks. ☕️🎨",
-    interests: ["Movies", "Running", "Photography"],
-    photo: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=800&q=80",
-  },
-  updateProfile: (patch) =>
-    set((state) => ({ profile: { ...state.profile, ...patch } })),
+  profile: defaultProfile,
+  updateProfile: (data) =>
+    set((state) => ({
+      profile: { ...state.profile, ...data },
+    })),
 }));
