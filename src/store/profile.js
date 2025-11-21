@@ -7,8 +7,8 @@ const defaultProfile = {
   bio: "",
   interests: [],
   photo: null,
-  // 🔹 bunu ekle
-  relationshipType: "", // "long_term", "short_term_fun" vs.
+ 
+  relationshipType: "", 
 };
 
 export const useProfile = create((set) => ({
