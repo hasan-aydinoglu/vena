@@ -1,4 +1,4 @@
-// src/constants/relationship.js
+
 
 export const RELATIONSHIP_OPTIONS = [
     { id: "life_partner", label: "Life partner" },
