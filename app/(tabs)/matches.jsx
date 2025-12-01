@@ -1,7 +1,6 @@
 import { Image, ScrollView, Text, View } from "react-native";
 import { getRelationshipLabel } from "../../src/constants/relationship";
 
-// Demo users — istersen backend’den çekeriz
 const MOCK_MATCHES = [
   {
     id: 1,
