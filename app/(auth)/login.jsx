@@ -9,7 +9,8 @@ export default function Login() {
 
   const onLogin = () => {
     loginDemo(email || "demo@vena.app");
-    router.replace("/(tabs)");
+    router.replace("/(tabs)/explore");
+
   };
 
   return (

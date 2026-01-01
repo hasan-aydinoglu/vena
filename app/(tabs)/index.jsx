@@ -1,22 +1,22 @@
 import { useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
-// ✅ Uzantıyla birlikte import et
+
 import { PROFILES as RAW_PROFILES } from "../../src/mock/profiles.js";
 
-// ✅ Güvenli fallback: import bozuksa bile crash olmasın
+
 const PROFILES = Array.isArray(RAW_PROFILES) ? RAW_PROFILES : [];
 
 export default function Swipe() {
   const [i, setI] = useState(0);
 
-  // i diziden büyük/eşitse p = null olsun (böylece "bitti" ekranı görünür)
+  
   const p = i < PROFILES.length ? PROFILES[i] : null;
 
-  const next = () => setI((x) => x + 1); // sınırı p üzerinden kontrol ediyoruz
+  const next = () => setI((x) => x + 1); 
 
   if (!p) {
-    // ✅ Profil yoksa / bittiğinde
+    
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
         <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 6 }}>
