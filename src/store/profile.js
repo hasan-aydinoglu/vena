@@ -7,6 +7,7 @@ const defaultProfile = {
   bio: "",
   interests: [],
   photo: null,
+  lookingFor: "Long-term relationship",  // ⭐ YENİ ALAN
  
   relationshipType: "", 
 };

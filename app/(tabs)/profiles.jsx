@@ -12,28 +12,28 @@ import {
 } from "react-native";
 import { useProfile } from "../../src/store/profile.js";
 
-
-const RELATIONSHIP_OPTIONS = [
-  { id: "life_partner", label: "Life partner" },
-  { id: "long_term", label: "Long-term relationship" },
-  { id: "short_term_fun", label: "Short-term fun" },
-  { id: "casual_dating", label: "Casual dating" },
+// Kullanıcıya gösterilecek seçenekler
+const LOOKING_FOR_OPTIONS = [
+  "Long-term relationship",
+  "Short-term fun",
+  "Open to see",
+  "Friends only",
+  "Coffee & vibes",
 ];
 
 export default function ProfileScreen() {
   const { profile, updateProfile } = useProfile();
   const [open, setOpen] = useState(false);
 
-  
+  // local drafts for editing
   const [name, setName] = useState(profile.name);
   const [age, setAge] = useState(String(profile.age));
   const [location, setLocation] = useState(profile.location);
   const [bio, setBio] = useState(profile.bio);
   const [interests, setInterests] = useState(profile.interests.join(", "));
   const [photo, setPhoto] = useState(profile.photo);
-  
-  const [relationshipType, setRelationshipType] = useState(
-    profile.relationshipType || ""
+  const [lookingFor, setLookingFor] = useState(
+    profile.lookingFor || "Long-term relationship"
   );
 
   const initials = useMemo(() => {
@@ -44,14 +44,14 @@ export default function ProfileScreen() {
   }, [name]);
 
   const openEditor = () => {
-    
+    // sync current profile -> drafts
     setName(profile.name);
     setAge(String(profile.age));
     setLocation(profile.location);
     setBio(profile.bio);
     setInterests(profile.interests.join(", "));
     setPhoto(profile.photo);
-    setRelationshipType(profile.relationshipType || ""); // 🔹 ekledik
+    setLookingFor(profile.lookingFor || "Long-term relationship");
     setOpen(true);
   };
 
@@ -85,23 +85,17 @@ export default function ProfileScreen() {
       bio,
       interests: parsedInterests,
       photo,
-      
-      relationshipType,
+      lookingFor, // ⭐ YENİ FIELD KAYIT
     });
     setOpen(false);
   };
-
-  
-  const relationshipLabel = profile.relationshipType
-    ? RELATIONSHIP_OPTIONS.find((o) => o.id === profile.relationshipType)?.label
-    : null;
 
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: "#fff" }}
       contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
     >
-      
+      {/* HEADER — tap to edit */}
       <View
         style={{
           flexDirection: "row",
@@ -124,7 +118,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      
+      {/* Avatar + Name (PRESSABLE AREA like Hinge) */}
       <Pressable
         onPress={openEditor}
         style={{ alignItems: "center", marginBottom: 18 }}
@@ -138,7 +132,7 @@ export default function ProfileScreen() {
                 height: 120,
                 borderRadius: 60,
                 borderWidth: 3,
-                borderColor: "#8b5cf6" ,
+                borderColor: "#ec4899", // pembe halka
               }}
             />
           ) : (
@@ -159,7 +153,7 @@ export default function ProfileScreen() {
               </Text>
             </View>
           )}
-          
+          {/* small pencil badge */}
           <View
             style={{
               position: "absolute",
@@ -184,49 +178,41 @@ export default function ProfileScreen() {
         </Text>
       </Pressable>
 
-      
+      {/* Basic info (read-only) */}
       <View style={{ gap: 8, marginBottom: 20 }}>
         <Row label="Age" value={String(profile.age)} />
         <Row label="Location" value={profile.location} />
       </View>
 
-      
-      {relationshipLabel ? (
-        <View style={{ marginBottom: 18 }}>
-          <Text style={{ fontWeight: "700", marginBottom: 8 }}>
-            Looking for
+      {/* ⭐ LOOKING FOR — PROFİLDE GÖRÜNEN BADGE */}
+      <View style={{ marginBottom: 18 }}>
+        <Text style={{ fontWeight: "700", marginBottom: 8 }}>Looking for</Text>
+        <View
+          style={{
+            alignSelf: "flex-start",
+            paddingVertical: 6,
+            paddingHorizontal: 12,
+            borderRadius: 999,
+            backgroundColor: "#fce7f3",
+          }}
+        >
+          <Text style={{ color: "#be185d", fontWeight: "600" }}>
+            {profile.lookingFor || "Not specified"}
           </Text>
-          <View
-            style={{
-              alignSelf: "flex-start",
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderRadius: 12,
-              backgroundColor: "#ffe8f0",
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 13,
-                fontWeight: "600",
-                color: "#ff2e63",
-              }}
-            >
-              {relationshipLabel}
-            </Text>
-          </View>
         </View>
-      ) : null}
+      </View>
 
-      
+      {/* Bio */}
       <View style={{ marginBottom: 18 }}>
         <Text style={{ fontWeight: "700", marginBottom: 8 }}>About me</Text>
         <Text style={{ lineHeight: 20, opacity: 0.9 }}>{profile.bio}</Text>
       </View>
 
-      
+      {/* Interests */}
       <Text style={{ fontWeight: "700", marginBottom: 8 }}>Interests</Text>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+      <View
+        style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 40 }}
+      >
         {profile.interests.map((tag) => (
           <View
             key={tag}
@@ -242,7 +228,7 @@ export default function ProfileScreen() {
         ))}
       </View>
 
-      
+      {/* EDIT MODAL */}
       <Modal
         visible={open}
         animationType="slide"
@@ -259,7 +245,7 @@ export default function ProfileScreen() {
             Edit Profile
           </Text>
 
-          
+          {/* Photo */}
           <Text style={{ fontWeight: "600", marginBottom: 8 }}>Photo</Text>
           <View
             style={{
@@ -324,15 +310,11 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          
+          {/* Name */}
           <Label>Name</Label>
-          <Input
-            value={name}
-            onChangeText={setName}
-            placeholder="Your name"
-          />
+          <Input value={name} onChangeText={setName} placeholder="Your name" />
 
-          
+          {/* Age */}
           <Label>Age</Label>
           <Input
             value={age}
@@ -341,7 +323,7 @@ export default function ProfileScreen() {
             placeholder="Age"
           />
 
-          
+          {/* Location */}
           <Label>Location</Label>
           <Input
             value={location}
@@ -349,7 +331,45 @@ export default function ProfileScreen() {
             placeholder="City, Country"
           />
 
-          
+          {/* ⭐ LOOKING FOR — EDIT ALANI */}
+          <Label>Looking for</Label>
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              gap: 8,
+              marginBottom: 4,
+            }}
+          >
+            {LOOKING_FOR_OPTIONS.map((option) => {
+              const active = lookingFor === option;
+              return (
+                <TouchableOpacity
+                  key={option}
+                  onPress={() => setLookingFor(option)}
+                  style={{
+                    paddingVertical: 8,
+                    paddingHorizontal: 14,
+                    borderRadius: 999,
+                    borderWidth: 1,
+                    borderColor: active ? "#ec4899" : "#e5e7eb",
+                    backgroundColor: active ? "#fce7f3" : "#fff",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: active ? "#be185d" : "#111827",
+                      fontWeight: active ? "700" : "500",
+                    }}
+                  >
+                    {option}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Bio */}
           <Label>About me</Label>
           <Input
             value={bio}
@@ -359,7 +379,7 @@ export default function ProfileScreen() {
             style={{ minHeight: 90, textAlignVertical: "top" }}
           />
 
-          
+          {/* Interests (comma-separated) */}
           <Label>Interests (comma separated)</Label>
           <Input
             value={interests}
@@ -367,48 +387,7 @@ export default function ProfileScreen() {
             placeholder="Movies, Running, Photography"
           />
 
-          
-          <Label>What are you looking for?</Label>
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              gap: 8,
-              marginBottom: 4,
-            }}
-          >
-            {RELATIONSHIP_OPTIONS.map((option) => {
-              const selected = relationshipType === option.id;
-              return (
-                <TouchableOpacity
-                  key={option.id}
-                  onPress={() => setRelationshipType(option.id)}
-                  style={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 8,
-                    borderRadius: 20,
-                    borderWidth: 1,
-                    borderColor: selected ? "#ff4b6a" : "#ccc",
-                    backgroundColor: selected ? "#ffe8f0" : "transparent",
-                    marginRight: 4,
-                    marginBottom: 4,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      fontWeight: selected ? "600" : "400",
-                      color: selected ? "#ff2e63" : "#333",
-                    }}
-                  >
-                    {option.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-         
+          {/* Actions */}
           <View
             style={{
               flexDirection: "row",
@@ -446,7 +425,7 @@ export default function ProfileScreen() {
   );
 }
 
-
+/* small ui helpers */
 function Row({ label, value }) {
   return (
     <View
