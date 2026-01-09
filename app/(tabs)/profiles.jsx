@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useProfile } from "../../src/store/profile.js";
 
-// Kullanıcıya gösterilecek seçenekler
+
 const LOOKING_FOR_OPTIONS = [
   "Long-term relationship",
   "Short-term fun",
@@ -25,7 +25,7 @@ export default function ProfileScreen() {
   const { profile, updateProfile } = useProfile();
   const [open, setOpen] = useState(false);
 
-  // local drafts for editing
+  
   const [name, setName] = useState(profile.name);
   const [age, setAge] = useState(String(profile.age));
   const [location, setLocation] = useState(profile.location);
@@ -44,7 +44,7 @@ export default function ProfileScreen() {
   }, [name]);
 
   const openEditor = () => {
-    // sync current profile -> drafts
+   
     setName(profile.name);
     setAge(String(profile.age));
     setLocation(profile.location);
@@ -85,7 +85,7 @@ export default function ProfileScreen() {
       bio,
       interests: parsedInterests,
       photo,
-      lookingFor, // ⭐ YENİ FIELD KAYIT
+      lookingFor, 
     });
     setOpen(false);
   };
@@ -95,7 +95,7 @@ export default function ProfileScreen() {
       style={{ flex: 1, backgroundColor: "#fff" }}
       contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
     >
-      {/* HEADER — tap to edit */}
+     
       <View
         style={{
           flexDirection: "row",
@@ -118,7 +118,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Avatar + Name (PRESSABLE AREA like Hinge) */}
+      
       <Pressable
         onPress={openEditor}
         style={{ alignItems: "center", marginBottom: 18 }}
@@ -132,7 +132,7 @@ export default function ProfileScreen() {
                 height: 120,
                 borderRadius: 60,
                 borderWidth: 3,
-                borderColor: "#ec4899", // pembe halka
+                borderColor: "#ec4899", 
               }}
             />
           ) : (
@@ -153,7 +153,7 @@ export default function ProfileScreen() {
               </Text>
             </View>
           )}
-          {/* small pencil badge */}
+          
           <View
             style={{
               position: "absolute",
@@ -178,13 +178,13 @@ export default function ProfileScreen() {
         </Text>
       </Pressable>
 
-      {/* Basic info (read-only) */}
+      
       <View style={{ gap: 8, marginBottom: 20 }}>
         <Row label="Age" value={String(profile.age)} />
         <Row label="Location" value={profile.location} />
       </View>
 
-      {/* ⭐ LOOKING FOR — PROFİLDE GÖRÜNEN BADGE */}
+      
       <View style={{ marginBottom: 18 }}>
         <Text style={{ fontWeight: "700", marginBottom: 8 }}>Looking for</Text>
         <View
@@ -202,13 +202,13 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* Bio */}
+     
       <View style={{ marginBottom: 18 }}>
         <Text style={{ fontWeight: "700", marginBottom: 8 }}>About me</Text>
         <Text style={{ lineHeight: 20, opacity: 0.9 }}>{profile.bio}</Text>
       </View>
 
-      {/* Interests */}
+      
       <Text style={{ fontWeight: "700", marginBottom: 8 }}>Interests</Text>
       <View
         style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 40 }}
@@ -228,7 +228,6 @@ export default function ProfileScreen() {
         ))}
       </View>
 
-      {/* EDIT MODAL */}
       <Modal
         visible={open}
         animationType="slide"
@@ -245,7 +244,7 @@ export default function ProfileScreen() {
             Edit Profile
           </Text>
 
-          {/* Photo */}
+         
           <Text style={{ fontWeight: "600", marginBottom: 8 }}>Photo</Text>
           <View
             style={{
@@ -310,11 +309,11 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* Name */}
+         
           <Label>Name</Label>
           <Input value={name} onChangeText={setName} placeholder="Your name" />
 
-          {/* Age */}
+          
           <Label>Age</Label>
           <Input
             value={age}
@@ -323,7 +322,7 @@ export default function ProfileScreen() {
             placeholder="Age"
           />
 
-          {/* Location */}
+          
           <Label>Location</Label>
           <Input
             value={location}
@@ -331,7 +330,7 @@ export default function ProfileScreen() {
             placeholder="City, Country"
           />
 
-          {/* ⭐ LOOKING FOR — EDIT ALANI */}
+          
           <Label>Looking for</Label>
           <View
             style={{
@@ -369,7 +368,7 @@ export default function ProfileScreen() {
             })}
           </View>
 
-          {/* Bio */}
+          
           <Label>About me</Label>
           <Input
             value={bio}
@@ -379,7 +378,7 @@ export default function ProfileScreen() {
             style={{ minHeight: 90, textAlignVertical: "top" }}
           />
 
-          {/* Interests (comma-separated) */}
+          
           <Label>Interests (comma separated)</Label>
           <Input
             value={interests}
@@ -387,7 +386,7 @@ export default function ProfileScreen() {
             placeholder="Movies, Running, Photography"
           />
 
-          {/* Actions */}
+          
           <View
             style={{
               flexDirection: "row",
@@ -425,7 +424,7 @@ export default function ProfileScreen() {
   );
 }
 
-/* small ui helpers */
+
 function Row({ label, value }) {
   return (
     <View
