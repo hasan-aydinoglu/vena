@@ -1,4 +1,5 @@
-import { Image, ScrollView, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { getRelationshipLabel } from "../../src/constants/relationship";
 
 const MOCK_MATCHES = [
@@ -29,6 +30,16 @@ const MOCK_MATCHES = [
 ];
 
 export default function Matches() {
+  const router = useRouter();
+
+  const openChat = (item) => {
+    // Şimdilik mock: item.id → conversationId
+    router.push({
+      pathname: "/chat/[conversationId]",
+      params: { conversationId: String(item.id) },
+    });
+  };
+
   return (
     <ScrollView style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
       <Text style={{ fontSize: 26, fontWeight: "700", marginBottom: 16 }}>
@@ -39,8 +50,10 @@ export default function Matches() {
         const label = getRelationshipLabel(item.relationshipType);
 
         return (
-          <View
+          <TouchableOpacity
             key={item.id}
+            onPress={() => openChat(item)}
+            activeOpacity={0.8}
             style={{
               backgroundColor: "#fff",
               borderRadius: 16,
@@ -95,7 +108,7 @@ export default function Matches() {
                 )}
               </View>
             </View>
-          </View>
+          </TouchableOpacity>
         );
       })}
     </ScrollView>
