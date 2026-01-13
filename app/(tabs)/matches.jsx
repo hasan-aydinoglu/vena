@@ -33,7 +33,7 @@ export default function Matches() {
   const router = useRouter();
 
   const openChat = (item) => {
-    // Şimdilik mock: item.id → conversationId
+   
     router.push({
       pathname: "/chat/[conversationId]",
       params: { conversationId: String(item.id) },
