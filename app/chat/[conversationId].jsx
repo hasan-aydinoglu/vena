@@ -1,4 +1,3 @@
-// app/chat/[conversationId].jsx
 import { useLocalSearchParams } from "expo-router";
 import { Text, View } from "react-native";
 
