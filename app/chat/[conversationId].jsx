@@ -1,4 +1,3 @@
-// app/chat/[conversationId].jsx
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -12,7 +11,7 @@ import {
   View,
 } from "react-native";
 
-// Şimdilik sahte mesajlar (mock)
+
 const MOCK_CONVERSATIONS = {
   "1": [
     { id: "m1", sender: "other", text: "Hey, how are you? 😊" },
@@ -35,7 +34,7 @@ export default function ChatScreen() {
   const [input, setInput] = useState("");
   const listRef = useRef(null);
 
-  // İlk yüklemede mock mesajları getir
+  
   useEffect(() => {
     const convId = String(conversationId || "");
     const initial = MOCK_CONVERSATIONS[convId] || [];
@@ -89,7 +88,7 @@ export default function ChatScreen() {
       keyboardVerticalOffset={80}
     >
       <View style={styles.container}>
-        {/* Başlık */}
+        
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Chat</Text>
           <Text style={styles.headerSubtitle}>
@@ -97,7 +96,7 @@ export default function ChatScreen() {
           </Text>
         </View>
 
-        {/* Mesajlar */}
+        
         <FlatList
           ref={listRef}
           data={messages}
@@ -111,7 +110,7 @@ export default function ChatScreen() {
           }}
         />
 
-        {/* Input alanı */}
+       
         <View style={styles.inputRow}>
           <TextInput
             style={styles.input}
