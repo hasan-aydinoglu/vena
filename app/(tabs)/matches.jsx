@@ -1,5 +1,12 @@
 import { useRouter } from "expo-router";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useState } from "react";
+import {
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { getRelationshipLabel } from "../../src/constants/relationship";
 
 const MOCK_MATCHES = [
@@ -29,31 +36,82 @@ const MOCK_MATCHES = [
   },
 ];
 
+const FILTERS = [
+  { id: "all", label: "All" },
+  { id: "long_term", label: "Serious" },
+  { id: "short_term_fun", label: "Fun" },
+  { id: "life_partner", label: "Life partner" },
+];
+
 export default function Matches() {
   const router = useRouter();
+  const [activeFilter, setActiveFilter] = useState("all");
 
   const openChat = (item) => {
-   
     router.push({
       pathname: "/chat/[conversationId]",
-      params: { conversationId: String(item.id) },
+      params: { conversationId: String(item.id) }, // şimdilik id = conversationId
     });
   };
 
+  const filteredMatches =
+    activeFilter === "all"
+      ? MOCK_MATCHES
+      : MOCK_MATCHES.filter((m) => m.relationshipType === activeFilter);
+
   return (
     <ScrollView style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
-      <Text style={{ fontSize: 26, fontWeight: "700", marginBottom: 16 }}>
+      {/* Başlık */}
+      <Text style={{ fontSize: 26, fontWeight: "700", marginBottom: 12 }}>
         Matches
       </Text>
 
-      {MOCK_MATCHES.map((item) => {
+      {/* Filtreler */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ marginBottom: 16 }}
+      >
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {FILTERS.map((f) => {
+            const isActive = f.id === activeFilter;
+            return (
+              <TouchableOpacity
+                key={f.id}
+                onPress={() => setActiveFilter(f.id)}
+                style={{
+                  paddingHorizontal: 14,
+                  paddingVertical: 6,
+                  borderRadius: 20,
+                  borderWidth: 1,
+                  borderColor: isActive ? "#ff2e63" : "#ddd",
+                  backgroundColor: isActive ? "#ff2e63" : "#fff",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: "600",
+                    color: isActive ? "#fff" : "#444",
+                  }}
+                >
+                  {f.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </ScrollView>
+
+      {/* Match kartları */}
+      {filteredMatches.map((item) => {
         const label = getRelationshipLabel(item.relationshipType);
 
         return (
           <TouchableOpacity
             key={item.id}
             onPress={() => openChat(item)}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
             style={{
               backgroundColor: "#fff",
               borderRadius: 16,
@@ -61,9 +119,11 @@ export default function Matches() {
               marginBottom: 20,
               elevation: 2,
               shadowColor: "#000",
-              shadowOpacity: 0.1,
+              shadowOpacity: 0.08,
               shadowRadius: 6,
               shadowOffset: { width: 0, height: 2 },
+              borderWidth: 1,
+              borderColor: "#f1f1f1",
             }}
           >
             <View style={{ flexDirection: "row", gap: 14 }}>
@@ -111,6 +171,12 @@ export default function Matches() {
           </TouchableOpacity>
         );
       })}
+
+      {filteredMatches.length === 0 && (
+        <Text style={{ color: "#777", marginTop: 20 }}>
+          Bu filtre için henüz eşleşme yok.
+        </Text>
+      )}
     </ScrollView>
   );
 }
