@@ -50,7 +50,7 @@ export default function Matches() {
   const openChat = (item) => {
     router.push({
       pathname: "/chat/[conversationId]",
-      params: { conversationId: String(item.id) }, // şimdilik id = conversationId
+      params: { conversationId: String(item.id) }, 
     });
   };
 
@@ -61,12 +61,12 @@ export default function Matches() {
 
   return (
     <ScrollView style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
-      {/* Başlık */}
+      
       <Text style={{ fontSize: 26, fontWeight: "700", marginBottom: 12 }}>
         Matches
       </Text>
 
-      {/* Filtreler */}
+     
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -103,7 +103,7 @@ export default function Matches() {
         </View>
       </ScrollView>
 
-      {/* Match kartları */}
+      
       {filteredMatches.map((item) => {
         const label = getRelationshipLabel(item.relationshipType);
 
