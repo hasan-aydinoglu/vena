@@ -48,9 +48,14 @@ export default function Matches() {
   const [activeFilter, setActiveFilter] = useState("all");
 
   const openChat = (item) => {
+    // Şimdilik mock: id'yi conversationId olarak kullanıyoruz
     router.push({
       pathname: "/chat/[conversationId]",
-      params: { conversationId: String(item.id) }, 
+      params: {
+        conversationId: String(item.id),
+        name: item.name,
+        photo: item.photo,
+      },
     });
   };
 
@@ -61,12 +66,12 @@ export default function Matches() {
 
   return (
     <ScrollView style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
-      
+      {/* Başlık */}
       <Text style={{ fontSize: 26, fontWeight: "700", marginBottom: 12 }}>
         Matches
       </Text>
 
-     
+      {/* Filtre butonları */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -103,7 +108,7 @@ export default function Matches() {
         </View>
       </ScrollView>
 
-      
+      {/* Match kartları */}
       {filteredMatches.map((item) => {
         const label = getRelationshipLabel(item.relationshipType);
 
