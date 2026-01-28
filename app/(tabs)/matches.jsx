@@ -48,7 +48,7 @@ export default function Matches() {
   const [activeFilter, setActiveFilter] = useState("all");
 
   const openChat = (item) => {
-    // Şimdilik mock: id'yi conversationId olarak kullanıyoruz
+    
     router.push({
       pathname: "/chat/[conversationId]",
       params: {
@@ -71,7 +71,7 @@ export default function Matches() {
         Matches
       </Text>
 
-      {/* Filtre butonları */}
+      
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -108,7 +108,7 @@ export default function Matches() {
         </View>
       </ScrollView>
 
-      {/* Match kartları */}
+     
       {filteredMatches.map((item) => {
         const label = getRelationshipLabel(item.relationshipType);
 
