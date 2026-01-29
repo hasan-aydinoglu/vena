@@ -1,7 +1,9 @@
-import { useLocalSearchParams } from "expo-router";
+// app/chat/[conversationId].jsx
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   FlatList,
+  Image,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -11,72 +13,141 @@ import {
   View,
 } from "react-native";
 
-
+// Mock messages
 const MOCK_CONVERSATIONS = {
   "1": [
     { id: "m1", sender: "other", text: "Hey, how are you? 😊" },
-    { id: "m2", sender: "me", text: "I’m good, just working on Vena." },
-    { id: "m3", sender: "other", text: "That sounds cool, tell me more!" },
+    { id: "m2", sender: "me", text: "I’m good! Working on Vena." },
   ],
-  "2": [
-    { id: "m4", sender: "other", text: "Hi! Do you live in Manchester?" },
-    { id: "m5", sender: "me", text: "Not yet, but I’m planning to move." },
-  ],
-  "3": [
-    { id: "m6", sender: "other", text: "Bonjour from Paris! 🇫🇷" },
-    { id: "m7", sender: "me", text: "Hey! Paris is on my travel list." },
-  ],
+  "2": [{ id: "m3", sender: "other", text: "Hi! Nice to meet you." }],
+  "3": [{ id: "m4", sender: "other", text: "Bonjour 🇫🇷" }],
 };
 
 export default function ChatScreen() {
-  const { conversationId } = useLocalSearchParams();
+  const { conversationId, name, photo } = useLocalSearchParams();
+  const router = useRouter();
+
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const listRef = useRef(null);
 
-  
+  // typing + status
+  const [isTyping, setIsTyping] = useState(false);
+  const [lastOutgoingId, setLastOutgoingId] = useState(null);
+  const [lastOutgoingStatus, setLastOutgoingStatus] = useState(null); // "Sent" | "Delivered" | "Seen"
+
+  const listRef = useRef(null);
+  const typingTimerRef = useRef(null);
+  const statusTimersRef = useRef([]);
+
   useEffect(() => {
     const convId = String(conversationId || "");
     const initial = MOCK_CONVERSATIONS[convId] || [];
     setMessages(initial);
   }, [conversationId]);
 
-  // Yeni mesaj gönder
-  const sendMessage = () => {
-    if (!input.trim()) return;
+  useEffect(() => {
+    return () => {
+      // cleanup timers
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+      statusTimersRef.current.forEach((t) => clearTimeout(t));
+      statusTimersRef.current = [];
+    };
+  }, []);
 
-    const newMessage = {
-      id: Date.now().toString(),
+  const scrollToEnd = () => {
+    setTimeout(() => {
+      listRef.current?.scrollToEnd({ animated: true });
+    }, 50);
+  };
+
+  const simulateOtherUserReply = (yourText) => {
+    // typing starts
+    setIsTyping(true);
+
+    // clear older typing timer
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+
+    typingTimerRef.current = setTimeout(() => {
+      setIsTyping(false);
+
+      const reply = {
+        id: `o-${Date.now()}`,
+        sender: "other",
+        text:
+          yourText.length > 18
+            ? "Interesting 🙂 Tell me more!"
+            : "Nice! 😊",
+      };
+
+      setMessages((prev) => [...prev, reply]);
+
+      // as soon as they reply, mark last outgoing as Seen (if exists)
+      if (lastOutgoingId) setLastOutgoingStatus("Seen");
+
+      scrollToEnd();
+    }, 1200);
+  };
+
+  const setOutgoingStatusTimers = () => {
+    // clear previous timers
+    statusTimersRef.current.forEach((t) => clearTimeout(t));
+    statusTimersRef.current = [];
+
+    // Delivered after 400ms
+    statusTimersRef.current.push(
+      setTimeout(() => setLastOutgoingStatus("Delivered"), 400)
+    );
+    // Seen after 2000ms (or earlier if reply comes)
+    statusTimersRef.current.push(
+      setTimeout(() => setLastOutgoingStatus("Seen"), 2000)
+    );
+  };
+
+  const sendMessage = () => {
+    const text = input.trim();
+    if (!text) return;
+
+    const newMsg = {
+      id: `me-${Date.now()}`,
       sender: "me",
-      text: input.trim(),
+      text,
     };
 
-    setMessages((prev) => [...prev, newMessage]);
+    setMessages((prev) => [...prev, newMsg]);
     setInput("");
 
-    // Az sonra scrollToEnd için küçük timeout
-    setTimeout(() => {
-      if (listRef.current) {
-        listRef.current.scrollToEnd({ animated: true });
-      }
-    }, 100);
+    // status setup for last outgoing message
+    setLastOutgoingId(newMsg.id);
+    setLastOutgoingStatus("Sent");
+    setOutgoingStatusTimers();
+
+    scrollToEnd();
+
+    // mock reply
+    simulateOtherUserReply(text);
   };
 
   const renderItem = ({ item }) => {
     const isMe = item.sender === "me";
+    const isLastOutgoing = isMe && item.id === lastOutgoingId;
 
     return (
-      <View
-        style={[
-          styles.msgContainer,
-          isMe ? styles.msgContainerMe : styles.msgContainerThem,
-        ]}
-      >
-        <View style={[styles.msgBubble, isMe ? styles.msgBubbleMe : styles.msgBubbleThem]}>
+      <View style={{ marginBottom: isLastOutgoing ? 2 : 6 }}>
+        <View
+          style={[
+            styles.bubble,
+            isMe ? styles.bubbleMe : styles.bubbleThem,
+          ]}
+        >
           <Text style={[styles.msgText, isMe ? styles.msgTextMe : styles.msgTextThem]}>
             {item.text}
           </Text>
         </View>
+
+        {/* Status only under your last message */}
+        {isLastOutgoing && lastOutgoingStatus && (
+          <Text style={styles.statusText}>{lastOutgoingStatus}</Text>
+        )}
       </View>
     );
   };
@@ -87,134 +158,128 @@ export default function ChatScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={80}
     >
-      <View style={styles.container}>
-        
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Chat</Text>
-          <Text style={styles.headerSubtitle}>
-            Conversation ID: {String(conversationId)}
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Text style={styles.backText}>←</Text>
+        </TouchableOpacity>
+
+        {photo ? <Image source={{ uri: photo }} style={styles.avatar} /> : null}
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.headerName} numberOfLines={1}>
+            {name || "Match"}
           </Text>
-        </View>
 
-        
-        <FlatList
-          ref={listRef}
-          data={messages}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
-          onContentSizeChange={() => {
-            if (listRef.current) {
-              listRef.current.scrollToEnd({ animated: true });
-            }
-          }}
+          {/* Typing line */}
+          {isTyping ? (
+            <Text style={styles.typingText}>typing…</Text>
+          ) : (
+            <Text style={styles.subText}>online</Text>
+          )}
+        </View>
+      </View>
+
+      {/* Messages */}
+      <FlatList
+        ref={listRef}
+        data={messages}
+        keyExtractor={(i) => String(i.id)}
+        renderItem={renderItem}
+        contentContainerStyle={{ paddingHorizontal: 12, paddingVertical: 10 }}
+        onContentSizeChange={scrollToEnd}
+      />
+
+      {/* Input */}
+      <View style={styles.inputRow}>
+        <TextInput
+          style={styles.input}
+          value={input}
+          onChangeText={setInput}
+          placeholder="Mesaj yaz..."
+          placeholderTextColor="#999"
         />
-
-       
-        <View style={styles.inputRow}>
-          <TextInput
-            style={styles.input}
-            value={input}
-            onChangeText={setInput}
-            placeholder="Mesaj yaz..."
-            placeholderTextColor="#999"
-          />
-          <TouchableOpacity style={styles.sendBtn} onPress={sendMessage}>
-            <Text style={styles.sendText}>Gönder</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.sendBtn} onPress={sendMessage} activeOpacity={0.85}>
+          <Text style={styles.sendText}>Gönder</Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 6,
-  },
+  root: { flex: 1, backgroundColor: "#fff" },
+
   header: {
-    paddingVertical: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "#eee",
-    marginBottom: 4,
+    backgroundColor: "#fff",
+    gap: 10,
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    color: "#888",
-    marginTop: 2,
-  },
-  listContent: {
-    paddingVertical: 8,
-  },
-  msgContainer: {
-    flexDirection: "row",
-    marginBottom: 6,
-  },
-  msgContainerMe: {
-    justifyContent: "flex-end",
-  },
-  msgContainerThem: {
-    justifyContent: "flex-start",
-  },
-  msgBubble: {
-    maxWidth: "75%",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+  backBtn: { paddingRight: 4, paddingVertical: 6 },
+  backText: { fontSize: 24 },
+
+  avatar: { width: 44, height: 44, borderRadius: 14 },
+  headerName: { fontSize: 18, fontWeight: "700" },
+  typingText: { fontSize: 12, color: "#4b6cff", marginTop: 2, fontWeight: "600" },
+  subText: { fontSize: 12, color: "#888", marginTop: 2 },
+
+  bubble: {
+    maxWidth: "78%",
+    paddingHorizontal: 12,
+    paddingVertical: 9,
     borderRadius: 14,
   },
-  msgBubbleMe: {
+  bubbleMe: {
+    alignSelf: "flex-end",
     backgroundColor: "#4b6cff",
-    borderBottomRightRadius: 2,
+    borderBottomRightRadius: 3,
   },
-  msgBubbleThem: {
+  bubbleThem: {
+    alignSelf: "flex-start",
     backgroundColor: "#f1f1f1",
-    borderBottomLeftRadius: 2,
+    borderBottomLeftRadius: 3,
   },
-  msgText: {
-    fontSize: 15,
+
+  msgText: { fontSize: 15 },
+  msgTextMe: { color: "#fff", fontWeight: "500" },
+  msgTextThem: { color: "#222", fontWeight: "500" },
+
+  statusText: {
+    alignSelf: "flex-end",
+    marginTop: 3,
+    marginRight: 4,
+    fontSize: 11,
+    color: "#888",
   },
-  msgTextMe: {
-    color: "#fff",
-  },
-  msgTextThem: {
-    color: "#222",
-  },
+
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingTop: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "#eee",
+    backgroundColor: "#fff",
+    gap: 8,
   },
   input: {
     flex: 1,
     backgroundColor: "#f4f4f4",
     borderRadius: 20,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 9,
     fontSize: 15,
   },
   sendBtn: {
-    marginLeft: 8,
     backgroundColor: "#000",
     borderRadius: 20,
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 9,
   },
-  sendText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 14,
-  },
+  sendText: { color: "#fff", fontWeight: "700", fontSize: 14 },
 });
