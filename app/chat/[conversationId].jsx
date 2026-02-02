@@ -1,4 +1,3 @@
-// app/chat/[conversationId].jsx
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -13,7 +12,7 @@ import {
   View,
 } from "react-native";
 
-// Mock messages
+
 const MOCK_CONVERSATIONS = {
   "1": [
     { id: "m1", sender: "other", text: "Hey, how are you? 😊" },
@@ -30,7 +29,7 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
 
-  // typing + status
+  
   const [isTyping, setIsTyping] = useState(false);
   const [lastOutgoingId, setLastOutgoingId] = useState(null);
   const [lastOutgoingStatus, setLastOutgoingStatus] = useState(null); // "Sent" | "Delivered" | "Seen"
@@ -61,10 +60,10 @@ export default function ChatScreen() {
   };
 
   const simulateOtherUserReply = (yourText) => {
-    // typing starts
+    
     setIsTyping(true);
 
-    // clear older typing timer
+    
     if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
 
     typingTimerRef.current = setTimeout(() => {
@@ -81,7 +80,7 @@ export default function ChatScreen() {
 
       setMessages((prev) => [...prev, reply]);
 
-      // as soon as they reply, mark last outgoing as Seen (if exists)
+      
       if (lastOutgoingId) setLastOutgoingStatus("Seen");
 
       scrollToEnd();
@@ -89,15 +88,15 @@ export default function ChatScreen() {
   };
 
   const setOutgoingStatusTimers = () => {
-    // clear previous timers
+    
     statusTimersRef.current.forEach((t) => clearTimeout(t));
     statusTimersRef.current = [];
 
-    // Delivered after 400ms
+    
     statusTimersRef.current.push(
       setTimeout(() => setLastOutgoingStatus("Delivered"), 400)
     );
-    // Seen after 2000ms (or earlier if reply comes)
+    
     statusTimersRef.current.push(
       setTimeout(() => setLastOutgoingStatus("Seen"), 2000)
     );
@@ -116,14 +115,14 @@ export default function ChatScreen() {
     setMessages((prev) => [...prev, newMsg]);
     setInput("");
 
-    // status setup for last outgoing message
+    
     setLastOutgoingId(newMsg.id);
     setLastOutgoingStatus("Sent");
     setOutgoingStatusTimers();
 
     scrollToEnd();
 
-    // mock reply
+    
     simulateOtherUserReply(text);
   };
 
@@ -144,7 +143,7 @@ export default function ChatScreen() {
           </Text>
         </View>
 
-        {/* Status only under your last message */}
+       
         {isLastOutgoing && lastOutgoingStatus && (
           <Text style={styles.statusText}>{lastOutgoingStatus}</Text>
         )}
@@ -158,7 +157,7 @@ export default function ChatScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={80}
     >
-      {/* Header */}
+      
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>←</Text>
@@ -171,7 +170,7 @@ export default function ChatScreen() {
             {name || "Match"}
           </Text>
 
-          {/* Typing line */}
+          
           {isTyping ? (
             <Text style={styles.typingText}>typing…</Text>
           ) : (
@@ -180,7 +179,7 @@ export default function ChatScreen() {
         </View>
       </View>
 
-      {/* Messages */}
+      
       <FlatList
         ref={listRef}
         data={messages}
@@ -190,7 +189,7 @@ export default function ChatScreen() {
         onContentSizeChange={scrollToEnd}
       />
 
-      {/* Input */}
+      
       <View style={styles.inputRow}>
         <TextInput
           style={styles.input}
