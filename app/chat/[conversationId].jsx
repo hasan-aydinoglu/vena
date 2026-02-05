@@ -11,16 +11,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-
-const MOCK_CONVERSATIONS = {
-  "1": [
-    { id: "m1", sender: "other", text: "Hey, how are you? 😊" },
-    { id: "m2", sender: "me", text: "I’m good! Working on Vena." },
-  ],
-  "2": [{ id: "m3", sender: "other", text: "Hi! Nice to meet you." }],
-  "3": [{ id: "m4", sender: "other", text: "Bonjour 🇫🇷" }],
-};
+import {
+  addMessage,
+  getConversation,
+  markAsRead,
+  setOtherMessageWithoutUnread,
+  subscribe,
+} from "../../src/mock/chatStore";
 
 export default function ChatScreen() {
   const { conversationId, name, photo } = useLocalSearchParams();
@@ -29,24 +26,33 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
 
-  
   const [isTyping, setIsTyping] = useState(false);
   const [lastOutgoingId, setLastOutgoingId] = useState(null);
-  const [lastOutgoingStatus, setLastOutgoingStatus] = useState(null); // "Sent" | "Delivered" | "Seen"
+  const [lastOutgoingStatus, setLastOutgoingStatus] = useState(null); // Sent/Delivered/Seen
 
   const listRef = useRef(null);
   const typingTimerRef = useRef(null);
   const statusTimersRef = useRef([]);
 
+  const cid = String(conversationId || "");
+
   useEffect(() => {
-    const convId = String(conversationId || "");
-    const initial = MOCK_CONVERSATIONS[convId] || [];
-    setMessages(initial);
-  }, [conversationId]);
+    // chat açıldı -> unread sıfırla
+    if (cid) markAsRead(cid);
+
+    // store dinle
+    const unsub = subscribe(() => {
+      setMessages(getConversation(cid));
+    });
+
+    // ilk yükle
+    setMessages(getConversation(cid));
+
+    return () => unsub();
+  }, [cid]);
 
   useEffect(() => {
     return () => {
-      // cleanup timers
       if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
       statusTimersRef.current.forEach((t) => clearTimeout(t));
       statusTimersRef.current = [];
@@ -54,16 +60,23 @@ export default function ChatScreen() {
   }, []);
 
   const scrollToEnd = () => {
-    setTimeout(() => {
-      listRef.current?.scrollToEnd({ animated: true });
-    }, 50);
+    setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
+  };
+
+  const setOutgoingStatusTimers = () => {
+    statusTimersRef.current.forEach((t) => clearTimeout(t));
+    statusTimersRef.current = [];
+
+    statusTimersRef.current.push(
+      setTimeout(() => setLastOutgoingStatus("Delivered"), 400)
+    );
+    statusTimersRef.current.push(
+      setTimeout(() => setLastOutgoingStatus("Seen"), 1800)
+    );
   };
 
   const simulateOtherUserReply = (yourText) => {
-    
     setIsTyping(true);
-
-    
     if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
 
     typingTimerRef.current = setTimeout(() => {
@@ -72,57 +85,32 @@ export default function ChatScreen() {
       const reply = {
         id: `o-${Date.now()}`,
         sender: "other",
-        text:
-          yourText.length > 18
-            ? "Interesting 🙂 Tell me more!"
-            : "Nice! 😊",
+        text: yourText.length > 18 ? "Interesting 🙂 Tell me more!" : "Nice! 😊",
       };
 
-      setMessages((prev) => [...prev, reply]);
+      // chat açıkken unread artırma
+      setOtherMessageWithoutUnread(cid, reply);
 
-      
+      // reply gelince seen olsun
       if (lastOutgoingId) setLastOutgoingStatus("Seen");
 
       scrollToEnd();
     }, 1200);
   };
 
-  const setOutgoingStatusTimers = () => {
-    
-    statusTimersRef.current.forEach((t) => clearTimeout(t));
-    statusTimersRef.current = [];
-
-    
-    statusTimersRef.current.push(
-      setTimeout(() => setLastOutgoingStatus("Delivered"), 400)
-    );
-    
-    statusTimersRef.current.push(
-      setTimeout(() => setLastOutgoingStatus("Seen"), 2000)
-    );
-  };
-
   const sendMessage = () => {
     const text = input.trim();
     if (!text) return;
 
-    const newMsg = {
-      id: `me-${Date.now()}`,
-      sender: "me",
-      text,
-    };
+    const msg = { id: `me-${Date.now()}`, sender: "me", text };
+    addMessage(cid, msg);
 
-    setMessages((prev) => [...prev, newMsg]);
     setInput("");
-
-    
-    setLastOutgoingId(newMsg.id);
+    setLastOutgoingId(msg.id);
     setLastOutgoingStatus("Sent");
     setOutgoingStatusTimers();
-
     scrollToEnd();
 
-    
     simulateOtherUserReply(text);
   };
 
@@ -132,18 +120,12 @@ export default function ChatScreen() {
 
     return (
       <View style={{ marginBottom: isLastOutgoing ? 2 : 6 }}>
-        <View
-          style={[
-            styles.bubble,
-            isMe ? styles.bubbleMe : styles.bubbleThem,
-          ]}
-        >
+        <View style={[styles.bubble, isMe ? styles.bubbleMe : styles.bubbleThem]}>
           <Text style={[styles.msgText, isMe ? styles.msgTextMe : styles.msgTextThem]}>
             {item.text}
           </Text>
         </View>
 
-       
         {isLastOutgoing && lastOutgoingStatus && (
           <Text style={styles.statusText}>{lastOutgoingStatus}</Text>
         )}
@@ -157,7 +139,7 @@ export default function ChatScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={80}
     >
-      
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>←</Text>
@@ -169,8 +151,6 @@ export default function ChatScreen() {
           <Text style={styles.headerName} numberOfLines={1}>
             {name || "Match"}
           </Text>
-
-          
           {isTyping ? (
             <Text style={styles.typingText}>typing…</Text>
           ) : (
@@ -179,7 +159,7 @@ export default function ChatScreen() {
         </View>
       </View>
 
-      
+      {/* Messages */}
       <FlatList
         ref={listRef}
         data={messages}
@@ -189,7 +169,7 @@ export default function ChatScreen() {
         onContentSizeChange={scrollToEnd}
       />
 
-      
+      {/* Input */}
       <View style={styles.inputRow}>
         <TextInput
           style={styles.input}

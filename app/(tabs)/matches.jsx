@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -8,33 +8,7 @@ import {
   View,
 } from "react-native";
 import { getRelationshipLabel } from "../../src/constants/relationship";
-
-const MOCK_MATCHES = [
-  {
-    id: 1,
-    name: "Sarah",
-    age: 24,
-    location: "London, UK",
-    photo: "https://randomuser.me/api/portraits/women/40.jpg",
-    relationshipType: "long_term",
-  },
-  {
-    id: 2,
-    name: "Emma",
-    age: 28,
-    location: "Manchester, UK",
-    photo: "https://randomuser.me/api/portraits/women/12.jpg",
-    relationshipType: "short_term_fun",
-  },
-  {
-    id: 3,
-    name: "Anna",
-    age: 22,
-    location: "Paris, France",
-    photo: "https://randomuser.me/api/portraits/women/55.jpg",
-    relationshipType: "life_partner",
-  },
-];
+import { getMatches, markAsRead, subscribe } from "../../src/mock/chatStore";
 
 const FILTERS = [
   { id: "all", label: "All" },
@@ -46,32 +20,43 @@ const FILTERS = [
 export default function Matches() {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState("all");
+  const [tick, setTick] = useState(0); // store değişince re-render için
+
+  useEffect(() => {
+    const unsub = subscribe(() => setTick((t) => t + 1));
+    return unsub;
+  }, []);
+
+  const allMatches = useMemo(() => getMatches(), [tick]);
+
+  const filteredMatches =
+    activeFilter === "all"
+      ? allMatches
+      : allMatches.filter((m) => m.relationshipType === activeFilter);
 
   const openChat = (item) => {
-    
+    const conversationId = String(item.id);
+
+    // chat'e girince unread sıfırla
+    markAsRead(conversationId);
+
     router.push({
       pathname: "/chat/[conversationId]",
       params: {
-        conversationId: String(item.id),
+        conversationId,
         name: item.name,
         photo: item.photo,
       },
     });
   };
 
-  const filteredMatches =
-    activeFilter === "all"
-      ? MOCK_MATCHES
-      : MOCK_MATCHES.filter((m) => m.relationshipType === activeFilter);
-
   return (
     <ScrollView style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
-      {/* Başlık */}
       <Text style={{ fontSize: 26, fontWeight: "700", marginBottom: 12 }}>
         Matches
       </Text>
 
-      
+      {/* Filtreler */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -108,7 +93,7 @@ export default function Matches() {
         </View>
       </ScrollView>
 
-     
+      {/* Match kartları */}
       {filteredMatches.map((item) => {
         const label = getRelationshipLabel(item.relationshipType);
 
@@ -121,7 +106,7 @@ export default function Matches() {
               backgroundColor: "#fff",
               borderRadius: 16,
               padding: 14,
-              marginBottom: 20,
+              marginBottom: 16,
               elevation: 2,
               shadowColor: "#000",
               shadowOpacity: 0.08,
@@ -132,21 +117,56 @@ export default function Matches() {
             }}
           >
             <View style={{ flexDirection: "row", gap: 14 }}>
-              <Image
-                source={{ uri: item.photo }}
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: 16,
-                }}
-              />
+              <View style={{ position: "relative" }}>
+                <Image
+                  source={{ uri: item.photo }}
+                  style={{ width: 80, height: 80, borderRadius: 16 }}
+                />
+
+                {/* Unread badge */}
+                {item.unread > 0 && (
+                  <View
+                    style={{
+                      position: "absolute",
+                      right: -6,
+                      top: -6,
+                      minWidth: 22,
+                      height: 22,
+                      borderRadius: 11,
+                      backgroundColor: "#ff2e63",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      paddingHorizontal: 6,
+                      borderWidth: 2,
+                      borderColor: "#fff",
+                    }}
+                  >
+                    <Text style={{ color: "#fff", fontSize: 12, fontWeight: "800" }}>
+                      {item.unread}
+                    </Text>
+                  </View>
+                )}
+              </View>
 
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 18, fontWeight: "700" }}>
-                  {item.name}, {item.age}
-                </Text>
-                <Text style={{ color: "#666", marginTop: 2 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 10 }}>
+                  <Text style={{ fontSize: 18, fontWeight: "700", flex: 1 }} numberOfLines={1}>
+                    {item.name}, {item.age}
+                  </Text>
+
+                  {/* mini time (çok basit) */}
+                  <Text style={{ fontSize: 12, color: "#999" }}>
+                    {item.lastMessageAt ? "now" : ""}
+                  </Text>
+                </View>
+
+                <Text style={{ color: "#666", marginTop: 2 }} numberOfLines={1}>
                   {item.location}
+                </Text>
+
+                {/* Last message */}
+                <Text style={{ marginTop: 6, color: "#444" }} numberOfLines={1}>
+                  {item.lastMessage || "Say hi 👋"}
                 </Text>
 
                 {label && (
