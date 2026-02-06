@@ -37,15 +37,15 @@ export default function ChatScreen() {
   const cid = String(conversationId || "");
 
   useEffect(() => {
-    // chat açıldı -> unread sıfırla
+    
     if (cid) markAsRead(cid);
 
-    // store dinle
+    
     const unsub = subscribe(() => {
       setMessages(getConversation(cid));
     });
 
-    // ilk yükle
+   
     setMessages(getConversation(cid));
 
     return () => unsub();
@@ -88,10 +88,9 @@ export default function ChatScreen() {
         text: yourText.length > 18 ? "Interesting 🙂 Tell me more!" : "Nice! 😊",
       };
 
-      // chat açıkken unread artırma
+      
       setOtherMessageWithoutUnread(cid, reply);
 
-      // reply gelince seen olsun
       if (lastOutgoingId) setLastOutgoingStatus("Seen");
 
       scrollToEnd();
@@ -139,7 +138,7 @@ export default function ChatScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={80}
     >
-      {/* Header */}
+      
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>←</Text>
@@ -159,7 +158,7 @@ export default function ChatScreen() {
         </View>
       </View>
 
-      {/* Messages */}
+      
       <FlatList
         ref={listRef}
         data={messages}
@@ -169,7 +168,7 @@ export default function ChatScreen() {
         onContentSizeChange={scrollToEnd}
       />
 
-      {/* Input */}
+     
       <View style={styles.inputRow}>
         <TextInput
           style={styles.input}
