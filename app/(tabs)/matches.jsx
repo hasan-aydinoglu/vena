@@ -20,7 +20,7 @@ const FILTERS = [
 export default function Matches() {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState("all");
-  const [tick, setTick] = useState(0); // store değişince re-render için
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     const unsub = subscribe(() => setTick((t) => t + 1));
@@ -37,7 +37,7 @@ export default function Matches() {
   const openChat = (item) => {
     const conversationId = String(item.id);
 
-    // chat'e girince unread sıfırla
+    
     markAsRead(conversationId);
 
     router.push({
@@ -56,7 +56,7 @@ export default function Matches() {
         Matches
       </Text>
 
-      {/* Filtreler */}
+      
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -93,7 +93,7 @@ export default function Matches() {
         </View>
       </ScrollView>
 
-      {/* Match kartları */}
+      
       {filteredMatches.map((item) => {
         const label = getRelationshipLabel(item.relationshipType);
 
@@ -154,7 +154,7 @@ export default function Matches() {
                     {item.name}, {item.age}
                   </Text>
 
-                  {/* mini time (çok basit) */}
+                  
                   <Text style={{ fontSize: 12, color: "#999" }}>
                     {item.lastMessageAt ? "now" : ""}
                   </Text>
@@ -164,7 +164,7 @@ export default function Matches() {
                   {item.location}
                 </Text>
 
-                {/* Last message */}
+                
                 <Text style={{ marginTop: 6, color: "#444" }} numberOfLines={1}>
                   {item.lastMessage || "Say hi 👋"}
                 </Text>
