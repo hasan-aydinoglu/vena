@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Animated,
   Image,
   ScrollView,
   Text,
@@ -17,10 +18,109 @@ const FILTERS = [
   { id: "life_partner", label: "Life partner" },
 ];
 
+// Mini "time ago" formatter
+function timeAgo(ts) {
+  if (!ts) return "";
+  const now = Date.now();
+  const diffMs = now - ts;
+  const diffSec = Math.floor(diffMs / 1000);
+
+  if (diffSec < 10) return "now";
+  if (diffSec < 60) return `${diffSec}s`;
+
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m`;
+
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h`;
+
+  const diffDay = Math.floor(diffHr / 24);
+  return `${diffDay}d`;
+}
+
+// Unread badge with pulse animation
+function UnreadBadge({ count }) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const opacity = useRef(new Animated.Value(0.6)).current;
+
+  useEffect(() => {
+    if (!count || count <= 0) return;
+
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(scale, {
+            toValue: 1.15,
+            duration: 550,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacity, {
+            toValue: 1,
+            duration: 550,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(scale, {
+            toValue: 1,
+            duration: 550,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacity, {
+            toValue: 0.6,
+            duration: 550,
+            useNativeDriver: true,
+          }),
+        ]),
+      ])
+    );
+
+    pulse.start();
+    return () => pulse.stop();
+  }, [count, opacity, scale]);
+
+  if (!count || count <= 0) return null;
+
+  return (
+    <View style={{ position: "absolute", right: -6, top: -6 }}>
+      {/* pulse ring */}
+      <Animated.View
+        style={{
+          position: "absolute",
+          width: 28,
+          height: 28,
+          borderRadius: 14,
+          backgroundColor: "#ff2e63",
+          transform: [{ scale }],
+          opacity,
+        }}
+      />
+      {/* solid badge */}
+      <View
+        style={{
+          minWidth: 22,
+          height: 22,
+          borderRadius: 11,
+          backgroundColor: "#ff2e63",
+          alignItems: "center",
+          justifyContent: "center",
+          paddingHorizontal: 6,
+          borderWidth: 2,
+          borderColor: "#fff",
+        }}
+      >
+        <Text style={{ color: "#fff", fontSize: 12, fontWeight: "800" }}>
+          {count}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 export default function Matches() {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState("all");
-  const [tick, setTick] = useState(0);
+  const [tick, setTick] = useState(0); // store değişince re-render
 
   useEffect(() => {
     const unsub = subscribe(() => setTick((t) => t + 1));
@@ -37,7 +137,7 @@ export default function Matches() {
   const openChat = (item) => {
     const conversationId = String(item.id);
 
-    
+    // chat'e girince unread sıfırla
     markAsRead(conversationId);
 
     router.push({
@@ -56,7 +156,7 @@ export default function Matches() {
         Matches
       </Text>
 
-      
+      {/* Filtreler */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -93,9 +193,10 @@ export default function Matches() {
         </View>
       </ScrollView>
 
-      
+      {/* Match kartları */}
       {filteredMatches.map((item) => {
         const label = getRelationshipLabel(item.relationshipType);
+        const when = timeAgo(item.lastMessageAt);
 
         return (
           <TouchableOpacity
@@ -117,55 +218,47 @@ export default function Matches() {
             }}
           >
             <View style={{ flexDirection: "row", gap: 14 }}>
+              {/* Avatar + badge */}
               <View style={{ position: "relative" }}>
                 <Image
                   source={{ uri: item.photo }}
                   style={{ width: 80, height: 80, borderRadius: 16 }}
                 />
-
-                {/* Unread badge */}
-                {item.unread > 0 && (
-                  <View
-                    style={{
-                      position: "absolute",
-                      right: -6,
-                      top: -6,
-                      minWidth: 22,
-                      height: 22,
-                      borderRadius: 11,
-                      backgroundColor: "#ff2e63",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      paddingHorizontal: 6,
-                      borderWidth: 2,
-                      borderColor: "#fff",
-                    }}
-                  >
-                    <Text style={{ color: "#fff", fontSize: 12, fontWeight: "800" }}>
-                      {item.unread}
-                    </Text>
-                  </View>
-                )}
+                <UnreadBadge count={item.unread} />
               </View>
 
               <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 10 }}>
-                  <Text style={{ fontSize: 18, fontWeight: "700", flex: 1 }} numberOfLines={1}>
+                {/* Name + time */}
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    gap: 10,
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{ fontSize: 18, fontWeight: "700", flex: 1 }}
+                    numberOfLines={1}
+                  >
                     {item.name}, {item.age}
                   </Text>
-
-                  
-                  <Text style={{ fontSize: 12, color: "#999" }}>
-                    {item.lastMessageAt ? "now" : ""}
-                  </Text>
+                  <Text style={{ fontSize: 12, color: "#999" }}>{when}</Text>
                 </View>
 
                 <Text style={{ color: "#666", marginTop: 2 }} numberOfLines={1}>
                   {item.location}
                 </Text>
 
-                
-                <Text style={{ marginTop: 6, color: "#444" }} numberOfLines={1}>
+                {/* Last message */}
+                <Text
+                  style={{
+                    marginTop: 6,
+                    color: item.unread > 0 ? "#111" : "#444",
+                    fontWeight: item.unread > 0 ? "700" : "500",
+                  }}
+                  numberOfLines={1}
+                >
                   {item.lastMessage || "Say hi 👋"}
                 </Text>
 
