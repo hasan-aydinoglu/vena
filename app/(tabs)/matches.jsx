@@ -18,7 +18,7 @@ const FILTERS = [
   { id: "life_partner", label: "Life partner" },
 ];
 
-// Mini "time ago" formatter
+
 function timeAgo(ts) {
   if (!ts) return "";
   const now = Date.now();
@@ -38,7 +38,7 @@ function timeAgo(ts) {
   return `${diffDay}d`;
 }
 
-// Unread badge with pulse animation
+
 function UnreadBadge({ count }) {
   const scale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(0.6)).current;
@@ -83,7 +83,7 @@ function UnreadBadge({ count }) {
 
   return (
     <View style={{ position: "absolute", right: -6, top: -6 }}>
-      {/* pulse ring */}
+     
       <Animated.View
         style={{
           position: "absolute",
@@ -95,7 +95,7 @@ function UnreadBadge({ count }) {
           opacity,
         }}
       />
-      {/* solid badge */}
+      
       <View
         style={{
           minWidth: 22,
@@ -120,7 +120,7 @@ function UnreadBadge({ count }) {
 export default function Matches() {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState("all");
-  const [tick, setTick] = useState(0); // store değişince re-render
+  const [tick, setTick] = useState(0); 
 
   useEffect(() => {
     const unsub = subscribe(() => setTick((t) => t + 1));
@@ -137,7 +137,7 @@ export default function Matches() {
   const openChat = (item) => {
     const conversationId = String(item.id);
 
-    // chat'e girince unread sıfırla
+    
     markAsRead(conversationId);
 
     router.push({
@@ -156,7 +156,7 @@ export default function Matches() {
         Matches
       </Text>
 
-      {/* Filtreler */}
+      
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -193,7 +193,7 @@ export default function Matches() {
         </View>
       </ScrollView>
 
-      {/* Match kartları */}
+      
       {filteredMatches.map((item) => {
         const label = getRelationshipLabel(item.relationshipType);
         const when = timeAgo(item.lastMessageAt);
@@ -218,7 +218,7 @@ export default function Matches() {
             }}
           >
             <View style={{ flexDirection: "row", gap: 14 }}>
-              {/* Avatar + badge */}
+              
               <View style={{ position: "relative" }}>
                 <Image
                   source={{ uri: item.photo }}
@@ -228,7 +228,7 @@ export default function Matches() {
               </View>
 
               <View style={{ flex: 1 }}>
-                {/* Name + time */}
+                
                 <View
                   style={{
                     flexDirection: "row",
@@ -250,7 +250,7 @@ export default function Matches() {
                   {item.location}
                 </Text>
 
-                {/* Last message */}
+                
                 <Text
                   style={{
                     marginTop: 6,
