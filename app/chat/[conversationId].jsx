@@ -34,7 +34,7 @@ export default function ChatScreen() {
   const [lastOutgoingId, setLastOutgoingId] = useState(null);
   const [lastOutgoingStatus, setLastOutgoingStatus] = useState(null); // Sent/Delivered/Seen
 
-  // Reaction UI state
+ 
   const [reactionModalVisible, setReactionModalVisible] = useState(false);
   const [selectedMsgId, setSelectedMsgId] = useState(null);
 
@@ -93,7 +93,7 @@ export default function ChatScreen() {
         reaction: null,
       };
 
-      // chat açıkken unread artırma
+      
       setOtherMessageWithoutUnread(cid, reply);
 
       if (lastOutgoingId) setLastOutgoingStatus("Seen");
@@ -131,18 +131,14 @@ export default function ChatScreen() {
   const setReactionOnMessage = (emoji) => {
     if (!selectedMsgId) return;
 
-    // local state update (mock)
+    
     setMessages((prev) =>
       prev.map((m) =>
         m.id === selectedMsgId ? { ...m, reaction: emoji } : m
       )
     );
 
-    // store da güncellensin ki Matches lastMessage vs. bozulmasın:
-    // (Basit çözüm: conversation'ı store'dan tekrar çekince reaction kaybolabilir.
-    // İstersen store'a "updateMessageReaction" fonksiyonu ekleriz.
-    // Şimdilik chat ekranında kalıcı görünür.)
-
+   
     setReactionModalVisible(false);
     setSelectedMsgId(null);
   };
@@ -184,7 +180,7 @@ export default function ChatScreen() {
           </View>
         </TouchableOpacity>
 
-        {/* Reaction chip */}
+        
         {item.reaction ? (
           <View
             style={[
@@ -196,7 +192,7 @@ export default function ChatScreen() {
           </View>
         ) : null}
 
-        {/* Status only under your last message */}
+        
         {isLastOutgoing && lastOutgoingStatus && (
           <Text style={styles.statusText}>{lastOutgoingStatus}</Text>
         )}
@@ -210,7 +206,7 @@ export default function ChatScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={80}
     >
-      {/* Header */}
+     
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>←</Text>
@@ -230,7 +226,7 @@ export default function ChatScreen() {
         </View>
       </View>
 
-      {/* Messages */}
+      
       <FlatList
         ref={listRef}
         data={messages}
@@ -240,7 +236,7 @@ export default function ChatScreen() {
         onContentSizeChange={scrollToEnd}
       />
 
-      {/* Input */}
+      
       <View style={styles.inputRow}>
         <TextInput
           style={styles.input}
@@ -258,7 +254,7 @@ export default function ChatScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Reaction Modal */}
+     
       <Modal
         transparent
         visible={reactionModalVisible}
