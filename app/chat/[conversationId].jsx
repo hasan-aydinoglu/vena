@@ -19,6 +19,7 @@ import {
   markAsRead,
   setOtherMessageWithoutUnread,
   subscribe,
+  updateMessageReaction, // ✅ EKLENDİ
 } from "../../src/mock/chatStore";
 
 const REACTIONS = ["❤️", "😂", "🔥", "👏", "😮"];
@@ -34,7 +35,6 @@ export default function ChatScreen() {
   const [lastOutgoingId, setLastOutgoingId] = useState(null);
   const [lastOutgoingStatus, setLastOutgoingStatus] = useState(null); // Sent/Delivered/Seen
 
- 
   const [reactionModalVisible, setReactionModalVisible] = useState(false);
   const [selectedMsgId, setSelectedMsgId] = useState(null);
 
@@ -93,7 +93,6 @@ export default function ChatScreen() {
         reaction: null,
       };
 
-      
       setOtherMessageWithoutUnread(cid, reply);
 
       if (lastOutgoingId) setLastOutgoingStatus("Seen");
@@ -128,26 +127,18 @@ export default function ChatScreen() {
     setReactionModalVisible(true);
   };
 
+  // ✅ DEĞİŞTİ: artık local setMessages değil, store'a yazıyoruz
   const setReactionOnMessage = (emoji) => {
     if (!selectedMsgId) return;
-
-    
-    setMessages((prev) =>
-      prev.map((m) =>
-        m.id === selectedMsgId ? { ...m, reaction: emoji } : m
-      )
-    );
-
-   
+    updateMessageReaction(cid, selectedMsgId, emoji); // ✅ KALICI
     setReactionModalVisible(false);
     setSelectedMsgId(null);
   };
 
+  // ✅ DEĞİŞTİ: remove reaction da store'a yazıyor
   const clearReaction = () => {
     if (!selectedMsgId) return;
-    setMessages((prev) =>
-      prev.map((m) => (m.id === selectedMsgId ? { ...m, reaction: null } : m))
-    );
+    updateMessageReaction(cid, selectedMsgId, null); // ✅ KALICI
     setReactionModalVisible(false);
     setSelectedMsgId(null);
   };
@@ -180,7 +171,6 @@ export default function ChatScreen() {
           </View>
         </TouchableOpacity>
 
-        
         {item.reaction ? (
           <View
             style={[
@@ -192,7 +182,6 @@ export default function ChatScreen() {
           </View>
         ) : null}
 
-        
         {isLastOutgoing && lastOutgoingStatus && (
           <Text style={styles.statusText}>{lastOutgoingStatus}</Text>
         )}
@@ -206,7 +195,6 @@ export default function ChatScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={80}
     >
-     
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>←</Text>
@@ -226,7 +214,6 @@ export default function ChatScreen() {
         </View>
       </View>
 
-      
       <FlatList
         ref={listRef}
         data={messages}
@@ -236,7 +223,6 @@ export default function ChatScreen() {
         onContentSizeChange={scrollToEnd}
       />
 
-      
       <View style={styles.inputRow}>
         <TextInput
           style={styles.input}
@@ -254,7 +240,6 @@ export default function ChatScreen() {
         </TouchableOpacity>
       </View>
 
-     
       <Modal
         transparent
         visible={reactionModalVisible}
