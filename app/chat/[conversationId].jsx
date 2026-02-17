@@ -19,7 +19,7 @@ import {
   markAsRead,
   setOtherMessageWithoutUnread,
   subscribe,
-  updateMessageReaction, // ✅ EKLENDİ
+  updateMessageReaction,
 } from "../../src/mock/chatStore";
 
 const REACTIONS = ["❤️", "😂", "🔥", "👏", "😮"];
@@ -33,7 +33,7 @@ export default function ChatScreen() {
 
   const [isTyping, setIsTyping] = useState(false);
   const [lastOutgoingId, setLastOutgoingId] = useState(null);
-  const [lastOutgoingStatus, setLastOutgoingStatus] = useState(null); // Sent/Delivered/Seen
+  const [lastOutgoingStatus, setLastOutgoingStatus] = useState(null); 
 
   const [reactionModalVisible, setReactionModalVisible] = useState(false);
   const [selectedMsgId, setSelectedMsgId] = useState(null);
@@ -127,18 +127,18 @@ export default function ChatScreen() {
     setReactionModalVisible(true);
   };
 
-  // ✅ DEĞİŞTİ: artık local setMessages değil, store'a yazıyoruz
+  
   const setReactionOnMessage = (emoji) => {
     if (!selectedMsgId) return;
-    updateMessageReaction(cid, selectedMsgId, emoji); // ✅ KALICI
+    updateMessageReaction(cid, selectedMsgId, emoji); 
     setReactionModalVisible(false);
     setSelectedMsgId(null);
   };
 
-  // ✅ DEĞİŞTİ: remove reaction da store'a yazıyor
+  
   const clearReaction = () => {
     if (!selectedMsgId) return;
-    updateMessageReaction(cid, selectedMsgId, null); // ✅ KALICI
+    updateMessageReaction(cid, selectedMsgId, null); 
     setReactionModalVisible(false);
     setSelectedMsgId(null);
   };
