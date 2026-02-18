@@ -1,6 +1,6 @@
 import { Link, router } from "expo-router";
 import { useState } from "react";
-import { Text, TextInput, TouchableOpacity /*, Image*/, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useUser } from "../../src/store/user";
 
 export default function Login() {
@@ -9,14 +9,14 @@ export default function Login() {
 
   const onLogin = () => {
     loginDemo(email || "demo@vena.app");
-    router.replace("/(tabs)/explore");
-
+    router.replace("/(tabs)"); // ✅ Home (Tabs root)
   };
 
   return (
     <View style={{ flex: 1, justifyContent: "center", padding: 24, backgroundColor: "#fff" }}>
-      
-      <Text style={{ fontSize: 22, fontWeight: "700", textAlign: "center", marginBottom: 12 }}>VENA</Text>
+      <Text style={{ fontSize: 22, fontWeight: "700", textAlign: "center", marginBottom: 12 }}>
+        VENA
+      </Text>
 
       <TextInput
         placeholder="Email"
@@ -28,10 +28,14 @@ export default function Login() {
       />
 
       <TouchableOpacity onPress={onLogin} style={{ backgroundColor: "black", padding: 16, borderRadius: 10 }}>
-        <Text style={{ color: "white", textAlign: "center", fontWeight: "600" }}>Continue</Text>
+        <Text style={{ color: "white", textAlign: "center", fontWeight: "600" }}>
+          Continue
+        </Text>
       </TouchableOpacity>
 
-      <Link href="/(auth)/register" style={{ textAlign: "center", marginTop: 16 }}>Create Account</Link>
+      <Link href="/(auth)/register" style={{ textAlign: "center", marginTop: 16 }}>
+        Create Account
+      </Link>
     </View>
   );
 }

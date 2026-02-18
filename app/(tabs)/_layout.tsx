@@ -1,21 +1,17 @@
-import { Redirect, Tabs } from "expo-router";
-import { useUser } from "../../src/store/user";
+import { Tabs } from "expo-router";
+import React from "react";
 
 export default function TabsLayout() {
-  const { user } = useUser();
-
- 
-  if (!user) {
-    return <Redirect href="/(auth)/login" />;
-  }
-
   return (
-    <Tabs screenOptions={{ headerShown: false }}>
-      <Tabs.Screen name="index" options={{ title: "Swipe" }} />
-      <Tabs.Screen name="matches" options={{ title: "Matches" }} />
-      <Tabs.Screen name="chat" options={{ title: "Chat" }} />
-      <Tabs.Screen name="profiles" options={{ title: "Profile" }} />
-      <Tabs.Screen name="settings" options={{ title: "Settings" }} />
+    <Tabs
+      initialRouteName="index"
+      screenOptions={{ headerShown: false }}
+    >
+      <Tabs.Screen name="index" options={{ title: "Home" }} />
+      <Tabs.Screen name="explore" options={{ title: "Explore" }} />
+      <Tabs.Screen name="likes" options={{ title: "Likes" }} />
+      
+      {/* sende başka tablar varsa ekle */}
     </Tabs>
   );
 }
