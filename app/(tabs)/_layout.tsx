@@ -11,7 +11,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="explore" options={{ title: "Explore" }} />
       <Tabs.Screen name="likes" options={{ title: "Likes" }} />
       
-      {/* sende başka tablar varsa ekle */}
+      
     </Tabs>
   );
 }

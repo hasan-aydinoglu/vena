@@ -6,7 +6,7 @@ import { PROFILES as RAW_PROFILES } from "../../src/mock/profiles.js";
 
 const PROFILES_RAW = Array.isArray(RAW_PROFILES) ? RAW_PROFILES : [];
 
-// id yoksa otomatik id verelim (like sistemi sağlam olsun)
+
 const PROFILES = PROFILES_RAW.map((p, idx) => ({
   id: p?.id ?? String(idx + 1),
   ...p,
@@ -17,7 +17,7 @@ export default function SwipeHome() {
 
   const [i, setI] = useState(0);
 
-  // likedIds yerine likedProfiles tutuyoruz (ileride likes sayfasında listelemek için)
+  
   const [likedProfiles, setLikedProfiles] = useState([]);
 
   const p = i < PROFILES.length ? PROFILES[i] : null;
@@ -39,8 +39,7 @@ export default function SwipeHome() {
 
     next();
 
-    // Like basınca direkt Likes tabına gitmek istersen aç:
-    // router.push("/(tabs)/likes");
+    
   };
 
   const likedCount = useMemo(() => likedProfiles.length, [likedProfiles]);
@@ -80,7 +79,7 @@ export default function SwipeHome() {
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 16, gap: 16 }}>
-      {/* Üst mini bar */}
+      
       <View style={{ width: 320, flexDirection: "row", justifyContent: "space-between" }}>
         <Text style={{ opacity: 0.7 }}>
           {i + 1}/{PROFILES.length}
@@ -91,7 +90,7 @@ export default function SwipeHome() {
         </TouchableOpacity>
       </View>
 
-      {/* Card */}
+      
       <View
         style={{
           width: 320,
@@ -112,7 +111,7 @@ export default function SwipeHome() {
         </View>
       </View>
 
-      {/* Buttons */}
+      
       <View style={{ flexDirection: "row", gap: 12 }}>
         <TouchableOpacity
           onPress={onPass}
