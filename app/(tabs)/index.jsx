@@ -1,12 +1,11 @@
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
 import { PROFILES as RAW_PROFILES } from "../../src/mock/profiles.js";
+import { useLikes } from "../../src/state/LikesContext";
 
 const PROFILES_RAW = Array.isArray(RAW_PROFILES) ? RAW_PROFILES : [];
-
-
 const PROFILES = PROFILES_RAW.map((p, idx) => ({
   id: p?.id ?? String(idx + 1),
   ...p,
@@ -14,35 +13,20 @@ const PROFILES = PROFILES_RAW.map((p, idx) => ({
 
 export default function SwipeHome() {
   const router = useRouter();
+  const { likedProfiles, likeProfile } = useLikes();
 
   const [i, setI] = useState(0);
-
-  
-  const [likedProfiles, setLikedProfiles] = useState([]);
-
   const p = i < PROFILES.length ? PROFILES[i] : null;
 
   const next = () => setI((x) => x + 1);
 
-  const onPass = () => {
-    next();
-  };
+  const onPass = () => next();
 
   const onLike = () => {
     if (!p) return;
-
-    setLikedProfiles((prev) => {
-      // aynı kişiyi 2 kere ekleme
-      if (prev.some((x) => x.id === p.id)) return prev;
-      return [...prev, p];
-    });
-
+    likeProfile(p);
     next();
-
-    
   };
-
-  const likedCount = useMemo(() => likedProfiles.length, [likedProfiles]);
 
   if (!p) {
     return (
@@ -50,47 +34,30 @@ export default function SwipeHome() {
         <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 6 }}>
           No more profiles today
         </Text>
-        <Text style={{ opacity: 0.6, textAlign: "center", marginBottom: 14 }}>
-          Add more mock data in{" "}
-          <Text style={{ fontWeight: "700" }}>src/mock/profiles.js</Text>
-        </Text>
-
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <TouchableOpacity
-            onPress={() => setI(0)}
-            style={{ paddingVertical: 12, paddingHorizontal: 18, borderRadius: 999, backgroundColor: "black" }}
-          >
-            <Text style={{ color: "#fff" }}>Restart</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => {
-              setI(0);
-              setLikedProfiles([]);
-            }}
-            style={{ paddingVertical: 12, paddingHorizontal: 18, borderRadius: 999, backgroundColor: "#eee" }}
-          >
-            <Text>Reset Likes</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          onPress={() => setI(0)}
+          style={{ paddingVertical: 12, paddingHorizontal: 18, borderRadius: 999, backgroundColor: "black" }}
+        >
+          <Text style={{ color: "#fff" }}>Restart</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 16, gap: 16 }}>
-      
+      {/* Üst bar */}
       <View style={{ width: 320, flexDirection: "row", justifyContent: "space-between" }}>
         <Text style={{ opacity: 0.7 }}>
           {i + 1}/{PROFILES.length}
         </Text>
 
         <TouchableOpacity onPress={() => router.push("/(tabs)/likes")}>
-          <Text style={{ fontWeight: "700" }}>Likes ({likedCount})</Text>
+          <Text style={{ fontWeight: "700" }}>Likes ({likedProfiles.length})</Text>
         </TouchableOpacity>
       </View>
 
-      
+      {/* Card */}
       <View
         style={{
           width: 320,
@@ -111,7 +78,7 @@ export default function SwipeHome() {
         </View>
       </View>
 
-      
+      {/* Buttons */}
       <View style={{ flexDirection: "row", gap: 12 }}>
         <TouchableOpacity
           onPress={onPass}
