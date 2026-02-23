@@ -113,11 +113,7 @@ export function setOtherMessageWithoutUnread(conversationId, message) {
   emit();
 }
 
-/**
- * ✅ NEW: Reaction'ı kalıcı yapmak için
- * messageId: "m1" gibi
- * emoji: "❤️" gibi (null gönderirsen kaldırır)
- */
+
 export function updateMessageReaction(conversationId, messageId, emoji) {
   const cid = String(conversationId);
   const mid = String(messageId);

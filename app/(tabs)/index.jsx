@@ -78,7 +78,7 @@ export default function SwipeHome() {
         </View>
       </View>
 
-      {/* Buttons */}
+      
       <View style={{ flexDirection: "row", gap: 12 }}>
         <TouchableOpacity
           onPress={onPass}

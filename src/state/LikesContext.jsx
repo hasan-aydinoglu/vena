@@ -3,8 +3,7 @@ import React, { createContext, useContext, useMemo, useState } from "react";
 const LikesContext = createContext(null);
 
 export function LikesProvider({ children }) {
-  const [likedProfiles, setLikedProfiles] = useState([]); // [{id, name, ...}]
-
+  const [likedProfiles, setLikedProfiles] = useState([]); 
   const likeProfile = (profile) => {
     if (!profile) return;
     setLikedProfiles((prev) => {
