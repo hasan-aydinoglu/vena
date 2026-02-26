@@ -68,7 +68,7 @@ export function addMessage(conversationId, message) {
   const cid = String(conversationId);
   if (!conversations[cid]) conversations[cid] = [];
 
-  // reaction alanı yoksa ekleyelim
+  
   const msg = message?.reaction === undefined ? { ...message, reaction: null } : message;
 
   conversations[cid].push(msg);
@@ -99,7 +99,7 @@ export function setOtherMessageWithoutUnread(conversationId, message) {
   const cid = String(conversationId);
   if (!conversations[cid]) conversations[cid] = [];
 
-  // reaction alanı yoksa ekleyelim
+  
   const msg = message?.reaction === undefined ? { ...message, reaction: null } : message;
 
   conversations[cid].push(msg);

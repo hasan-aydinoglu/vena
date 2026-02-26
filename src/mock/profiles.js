@@ -11,7 +11,7 @@ const PROFILES_RAW = Array.isArray(RAW_PROFILES) ? RAW_PROFILES : [];
 const PROFILES = PROFILES_RAW.map((p, idx) => ({
   id: p?.id ?? String(idx + 1),
   ...p,
-  // profile’da psychProfile yoksa default ver 
+  
   psychProfile: p?.psychProfile ?? {
     attachment: "secure",
     intentLevel: "long-term",
@@ -26,7 +26,7 @@ export default function SwipeHome() {
   const p = i < PROFILES.length ? PROFILES[i] : null;
   const next = () => setI((x) => x + 1);
 
-  // ✅ Şimdilik current user psych profile (Firebase yok)
+
  
   const currentUserPsych = useMemo(
     () => ({
@@ -78,7 +78,7 @@ export default function SwipeHome() {
           borderColor: "#eee",
         }}
       >
-        {/* ✅ Badge overlay */}
+        
         {compatibility != null && (
           <View
             style={{

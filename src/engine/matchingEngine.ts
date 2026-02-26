@@ -4,7 +4,7 @@ export type IntentLevel = "marriage" | "long-term" | "exploring";
 export type PsychProfile = {
   attachment: Attachment;
   intentLevel: IntentLevel;
-  emotionalRegulation: number; // 1-10
+  emotionalRegulation: number; 
 };
 
 export function calculateCompatibility(a: PsychProfile, b: PsychProfile) {

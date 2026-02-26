@@ -57,7 +57,7 @@ export default function SwipeHome() {
         </TouchableOpacity>
       </View>
 
-      {/* Card */}
+      
       <View
         style={{
           width: 320,
