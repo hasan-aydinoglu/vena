@@ -1,25 +1,34 @@
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useMemo, useState } from "react";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { usePsychProfile, type PsychProfile } from "../../src/state/PsychProfileContext";
 
 export default function PsychologyScreen() {
   const router = useRouter();
+  const { setPsychProfile } = usePsychProfile();
 
-  const [attachment, setAttachment] = useState<string | null>(null);
-  const [intentLevel, setIntentLevel] = useState<string | null>(null);
+  const [attachment, setAttachment] = useState<"secure" | "anxious" | "avoidant" | null>(null);
+  const [intentLevel, setIntentLevel] = useState<"marriage" | "long-term" | "exploring" | null>(null);
   const [emotionalRegulation, setEmotionalRegulation] = useState<number>(5);
 
+  const canContinue = useMemo(() => !!attachment && !!intentLevel, [attachment, intentLevel]);
+
   const handleContinue = () => {
-    const profileData = {
+    if (!attachment || !intentLevel) {
+      Alert.alert("Complete setup", "Please select attachment style and intent level.");
+      return;
+    }
+
+    const profileData: PsychProfile = {
       attachment,
       intentLevel,
       emotionalRegulation,
     };
 
+    setPsychProfile(profileData);
     console.log("User Psychological Profile:", profileData);
 
-    router.replace("/(tabs)");
-
+    router.replace("/(tabs)"); // Home (Swipe)
   };
 
   return (
@@ -28,16 +37,16 @@ export default function PsychologyScreen() {
 
       <Text style={styles.section}>Attachment Style</Text>
       <View style={styles.row}>
-        <Option label="Secure" onPress={() => setAttachment("secure")} />
-        <Option label="Anxious" onPress={() => setAttachment("anxious")} />
-        <Option label="Avoidant" onPress={() => setAttachment("avoidant")} />
+        <Option label="Secure" onPress={() => setAttachment("secure")} active={attachment === "secure"} />
+        <Option label="Anxious" onPress={() => setAttachment("anxious")} active={attachment === "anxious"} />
+        <Option label="Avoidant" onPress={() => setAttachment("avoidant")} active={attachment === "avoidant"} />
       </View>
 
       <Text style={styles.section}>Intent Level</Text>
       <View style={styles.row}>
-        <Option label="Marriage" onPress={() => setIntentLevel("marriage")} />
-        <Option label="Long-term" onPress={() => setIntentLevel("long-term")} />
-        <Option label="Exploring" onPress={() => setIntentLevel("exploring")} />
+        <Option label="Marriage" onPress={() => setIntentLevel("marriage")} active={intentLevel === "marriage"} />
+        <Option label="Long-term" onPress={() => setIntentLevel("long-term")} active={intentLevel === "long-term"} />
+        <Option label="Exploring" onPress={() => setIntentLevel("exploring")} active={intentLevel === "exploring"} />
       </View>
 
       <Text style={styles.section}>Emotional Regulation (1-10)</Text>
@@ -45,7 +54,10 @@ export default function PsychologyScreen() {
         {[...Array(10)].map((_, i) => (
           <TouchableOpacity
             key={i}
-            style={styles.scoreButton}
+            style={[
+              styles.scoreButton,
+              emotionalRegulation === i + 1 && { borderWidth: 2, borderColor: "#6C5CE7" },
+            ]}
             onPress={() => setEmotionalRegulation(i + 1)}
           >
             <Text style={styles.scoreText}>{i + 1}</Text>
@@ -53,17 +65,32 @@ export default function PsychologyScreen() {
         ))}
       </View>
 
-      <TouchableOpacity style={styles.continueBtn} onPress={handleContinue}>
+      <TouchableOpacity
+        style={[styles.continueBtn, !canContinue && { opacity: 0.5 }]}
+        onPress={handleContinue}
+        disabled={!canContinue}
+      >
         <Text style={{ color: "white" }}>Continue</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
-function Option({ label, onPress }: any) {
+function Option({
+  label,
+  onPress,
+  active,
+}: {
+  label: string;
+  onPress: () => void;
+  active?: boolean;
+}) {
   return (
-    <TouchableOpacity style={styles.option} onPress={onPress}>
-      <Text>{label}</Text>
+    <TouchableOpacity
+      style={[styles.option, active && { borderColor: "#6C5CE7", borderWidth: 1 }]}
+      onPress={onPress}
+    >
+      <Text style={{ color: "white" }}>{label}</Text>
     </TouchableOpacity>
   );
 }
