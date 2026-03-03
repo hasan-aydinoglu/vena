@@ -1,50 +1,45 @@
-# Welcome to your Expo app 👋
+# VENA – AI-Driven Relationship Intelligence Platform
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Vena is an AI-powered relationship intelligence platform designed to move beyond swipe culture and enable emotionally aligned, long-term compatibility matching.
 
-## Get started
+Unlike traditional dating applications, Vena integrates behavioral modeling, psychological profiling, and algorithmic compatibility scoring to deliver more meaningful connections.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## 🚀 Vision
 
-2. Start the app
+Modern dating platforms focus primarily on appearance-based swiping.  
+Vena redefines digital matchmaking by introducing:
 
-   ```bash
-   npx expo start
-   ```
+- Psychological attachment modeling
+- Intent alignment filtering
+- Emotional regulation scoring
+- Behavioral compatibility engine
 
-In the output, you'll find options to open the app in a
+Our goal is to reduce emotional mismatch and improve long-term relationship outcomes through data-driven compatibility.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 🧠 Core Features
 
-## Get a fresh project
+### 1️⃣ Psychological Onboarding
+Users complete a behavioral assessment including:
+- Attachment style (Secure / Anxious / Avoidant)
+- Relationship intent (Marriage / Long-term / Exploring)
+- Emotional regulation scoring (1–10)
 
-When you're ready, run:
+This creates a structured psychological profile.
 
-```bash
-npm run reset-project
-```
+---
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2️⃣ Behavioral Compatibility Engine
+Vena calculates a dynamic compatibility score using:
 
-## Learn more
+- Attachment alignment
+- Intent alignment
+- Emotional stability proximity
 
-To learn more about developing your project with Expo, look at the following resources:
+Example scoring logic:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```ts
+calculateCompatibility(userA, userB)
