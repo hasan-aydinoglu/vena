@@ -55,7 +55,7 @@ export default function Consent() {
 
         <View style={{ height: 16 }} />
 
-        {/* İstersen buraya link butonları ekleyebiliriz (Privacy Policy / Terms sayfaları) */}
+        
         <Text style={{ fontSize: 12, opacity: 0.6 }}>
           Tip: Later you can update consent and view policies from Settings.
         </Text>

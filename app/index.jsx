@@ -28,9 +28,9 @@ export default function Index() {
     );
   }
 
-  // ✅ Kabul yoksa önce consent
+ 
   if (!accepted) return <Redirect href="/consent" />;
 
-  // ✅ Kabul varsa login
+  
   return <Redirect href="/(auth)/login" />;
 }
