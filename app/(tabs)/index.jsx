@@ -26,7 +26,7 @@ export default function SwipeHome() {
 
   const [i, setI] = useState(0);
 
-  // BOOST
+ 
   const [boostsLeft, setBoostsLeft] = useState(3);
   const [boostActive, setBoostActive] = useState(false);
   const [boostSecondsLeft, setBoostSecondsLeft] = useState(0);
@@ -78,7 +78,7 @@ export default function SwipeHome() {
 
     setBoostsLeft((prev) => prev - 1);
     setBoostActive(true);
-    setBoostSecondsLeft(30 * 60); // 30 minutes
+    setBoostSecondsLeft(30 * 60); 
   };
 
   const formatTime = (seconds) => {
@@ -137,7 +137,7 @@ export default function SwipeHome() {
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 16, gap: 16 }}>
-      {/* Top Bar */}
+      
       <View style={{ width: 320, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
         <Text style={{ opacity: 0.7 }}>
           {i + 1}/{PROFILES.length}
@@ -164,7 +164,7 @@ export default function SwipeHome() {
         </View>
       </View>
 
-      {/* Card */}
+      
       <View
         style={{
           width: 320,
@@ -176,7 +176,7 @@ export default function SwipeHome() {
           borderColor: "#eee",
         }}
       >
-        {/* Compatibility Badge */}
+       
         {compatibility != null && (
           <View
             style={{
@@ -194,7 +194,7 @@ export default function SwipeHome() {
           </View>
         )}
 
-        {/* Boost Badge */}
+        
         {boostActive && (
           <View
             style={{
@@ -228,7 +228,7 @@ export default function SwipeHome() {
         </View>
       </View>
 
-      {/* Action Buttons */}
+      
       <View style={{ flexDirection: "row", gap: 12 }}>
         <TouchableOpacity
           onPress={onPass}

@@ -20,7 +20,7 @@ export default function Settings() {
           style: "destructive",
           onPress: async () => {
             await AsyncStorage.removeItem(KEY);
-            // App giriş akışını baştan başlat
+            
             router.replace("/consent");
           },
         },
@@ -33,7 +33,7 @@ export default function Settings() {
       <Text style={{ fontSize: 22, fontWeight: "800" }}>Settings</Text>
       <Text style={{ marginTop: 6, opacity: 0.6 }}>Manage your preferences and privacy options.</Text>
 
-      {/* Privacy & Terms Section */}
+      
       <View style={{ marginTop: 24, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: "#eee" }}>
         <Text style={{ fontSize: 16, fontWeight: "800", marginBottom: 10 }}>Privacy & Terms</Text>
 
