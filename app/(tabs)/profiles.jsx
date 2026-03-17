@@ -1,5 +1,7 @@
+import { useRouter } from "expo-router";
 import React from "react";
 import {
+  Alert,
   Image,
   SafeAreaView,
   ScrollView,
@@ -42,6 +44,8 @@ function StatCard({ title, value, subtitle }) {
 }
 
 export default function ProfileScreen() {
+  const router = useRouter();
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -68,11 +72,19 @@ export default function ProfileScreen() {
           <Text style={styles.bio}>{USER.bio}</Text>
 
           <View style={styles.actionRow}>
-            <TouchableOpacity style={styles.primaryButton}>
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={() => router.push("/edit-profile")}
+            >
               <Text style={styles.primaryButtonText}>Edit Profile</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.secondaryButton}>
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={() =>
+                Alert.alert("Preview", "Profile preview screen coming soon.")
+              }
+            >
               <Text style={styles.secondaryButtonText}>Preview</Text>
             </TouchableOpacity>
           </View>
@@ -96,7 +108,9 @@ export default function ProfileScreen() {
 
           <View style={styles.fullCard}>
             <Text style={styles.fullCardTitle}>Emotional Regulation</Text>
-            <Text style={styles.fullCardValue}>{USER.emotionalRegulation}/10</Text>
+            <Text style={styles.fullCardValue}>
+              {USER.emotionalRegulation}/10
+            </Text>
             <Text style={styles.fullCardSubtitle}>
               Calm, balanced, and emotionally aware communication style.
             </Text>
@@ -153,7 +167,9 @@ export default function ProfileScreen() {
               <Text style={styles.menuArrow}>›</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]}>
+            <TouchableOpacity
+              style={[styles.menuItem, { borderBottomWidth: 0 }]}
+            >
               <Text style={[styles.menuText, styles.logoutText]}>Log Out</Text>
               <Text style={[styles.menuArrow, styles.logoutText]}>›</Text>
             </TouchableOpacity>
