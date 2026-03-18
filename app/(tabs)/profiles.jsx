@@ -10,20 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-const USER = {
-  name: "Hasan",
-  age: 27,
-  city: "Istanbul",
-  bio: "Founder-minded, ambitious, and looking for a real connection built on trust, communication, and emotional depth.",
-  photo:
-    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=80",
-  attachment: "secure",
-  intentLevel: "long-term",
-  emotionalRegulation: 8,
-  interests: ["Entrepreneurship", "Travel", "Deep Talks", "Coffee", "Tech"],
-  boostActive: false,
-};
+import { useProfile } from "../../src/context/ProfileContext";
 
 function InfoPill({ label }) {
   return (
@@ -45,6 +32,7 @@ function StatCard({ title, value, subtitle }) {
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { user } = useProfile();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -61,15 +49,15 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.profileCard}>
-          <Image source={{ uri: USER.photo }} style={styles.avatar} />
+          <Image source={{ uri: user.photo }} style={styles.avatar} />
 
           <Text style={styles.name}>
-            {USER.name}, {USER.age}
+            {user.name}, {user.age}
           </Text>
 
-          <Text style={styles.location}>{USER.city}</Text>
+          <Text style={styles.location}>{user.city}</Text>
 
-          <Text style={styles.bio}>{USER.bio}</Text>
+          <Text style={styles.bio}>{user.bio}</Text>
 
           <View style={styles.actionRow}>
             <TouchableOpacity
@@ -96,12 +84,12 @@ export default function ProfileScreen() {
           <View style={styles.statsRow}>
             <StatCard
               title="Attachment"
-              value={USER.attachment}
+              value={user.attachment}
               subtitle="Emotional style"
             />
             <StatCard
               title="Intent"
-              value={USER.intentLevel}
+              value={user.intentLevel}
               subtitle="Relationship goal"
             />
           </View>
@@ -109,7 +97,7 @@ export default function ProfileScreen() {
           <View style={styles.fullCard}>
             <Text style={styles.fullCardTitle}>Emotional Regulation</Text>
             <Text style={styles.fullCardValue}>
-              {USER.emotionalRegulation}/10
+              {user.emotionalRegulation}/10
             </Text>
             <Text style={styles.fullCardSubtitle}>
               Calm, balanced, and emotionally aware communication style.
@@ -124,7 +112,7 @@ export default function ProfileScreen() {
             <View>
               <Text style={styles.boostTitle}>Profile Boost</Text>
               <Text style={styles.boostSubtitle}>
-                {USER.boostActive
+                {user.boostActive
                   ? "Your profile is currently boosted."
                   : "Activate boost to get more visibility."}
               </Text>
@@ -132,7 +120,7 @@ export default function ProfileScreen() {
 
             <TouchableOpacity style={styles.boostButton}>
               <Text style={styles.boostButtonText}>
-                {USER.boostActive ? "Active" : "Boost"}
+                {user.boostActive ? "Active" : "Boost"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -142,7 +130,7 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>Interests</Text>
 
           <View style={styles.pillsWrap}>
-            {USER.interests.map((item, index) => (
+            {user.interests.map((item, index) => (
               <InfoPill key={index} label={item} />
             ))}
           </View>

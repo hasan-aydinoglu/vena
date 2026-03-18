@@ -1,15 +1,16 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { useProfile } from "../src/context/ProfileContext";
 
 function OptionChip({ label, active, onPress }) {
   return (
@@ -26,19 +27,50 @@ function OptionChip({ label, active, onPress }) {
 
 export default function EditProfileScreen() {
   const router = useRouter();
+  const { user, updateUser } = useProfile();
 
-  const [name, setName] = useState("Hasan");
-  const [age, setAge] = useState("27");
-  const [city, setCity] = useState("Istanbul");
-  const [bio, setBio] = useState(
-    "Founder-minded, ambitious, and looking for a real connection built on trust, communication, and emotional depth."
+  const [name, setName] = useState(user.name);
+  const [age, setAge] = useState(String(user.age));
+  const [city, setCity] = useState(user.city);
+  const [bio, setBio] = useState(user.bio);
+  const [attachment, setAttachment] = useState(user.attachment);
+  const [intentLevel, setIntentLevel] = useState(user.intentLevel);
+  const [emotionalRegulation, setEmotionalRegulation] = useState(
+    String(user.emotionalRegulation)
   );
 
-  const [attachment, setAttachment] = useState("secure");
-  const [intentLevel, setIntentLevel] = useState("long-term");
-  const [emotionalRegulation, setEmotionalRegulation] = useState("8");
-
   const handleSave = () => {
+    const parsedAge = Number(age);
+    const parsedEmotion = Number(emotionalRegulation);
+
+    if (!name.trim() || !city.trim() || !bio.trim()) {
+      Alert.alert("Missing fields", "Please fill in all required fields.");
+      return;
+    }
+
+    if (!parsedAge || parsedAge < 18) {
+      Alert.alert("Invalid age", "Please enter a valid age.");
+      return;
+    }
+
+    if (!parsedEmotion || parsedEmotion < 1 || parsedEmotion > 10) {
+      Alert.alert(
+        "Invalid score",
+        "Emotional regulation must be between 1 and 10."
+      );
+      return;
+    }
+
+    updateUser({
+      name: name.trim(),
+      age: parsedAge,
+      city: city.trim(),
+      bio: bio.trim(),
+      attachment,
+      intentLevel,
+      emotionalRegulation: parsedEmotion,
+    });
+
     Alert.alert("Saved", "Your profile changes have been saved.");
     router.back();
   };
