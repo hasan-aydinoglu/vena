@@ -1,7 +1,9 @@
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
+  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -33,11 +35,29 @@ export default function EditProfileScreen() {
   const [age, setAge] = useState(String(user.age));
   const [city, setCity] = useState(user.city);
   const [bio, setBio] = useState(user.bio);
+  const [photo, setPhoto] = useState(user.photo);
   const [attachment, setAttachment] = useState(user.attachment);
   const [intentLevel, setIntentLevel] = useState(user.intentLevel);
   const [emotionalRegulation, setEmotionalRegulation] = useState(
     String(user.emotionalRegulation)
   );
+
+  const pickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets?.length > 0) {
+        setPhoto(result.assets[0].uri);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Could not open image library.");
+    }
+  };
 
   const handleSave = () => {
     const parsedAge = Number(age);
@@ -66,6 +86,7 @@ export default function EditProfileScreen() {
       age: parsedAge,
       city: city.trim(),
       bio: bio.trim(),
+      photo,
       attachment,
       intentLevel,
       emotionalRegulation: parsedEmotion,
@@ -89,6 +110,18 @@ export default function EditProfileScreen() {
           <Text style={styles.headerTitle}>Edit Profile</Text>
 
           <View style={styles.headerSpacer} />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Profile Photo</Text>
+
+          <View style={styles.photoCard}>
+            <Image source={{ uri: photo }} style={styles.avatar} />
+
+            <TouchableOpacity style={styles.changePhotoButton} onPress={pickImage}>
+              <Text style={styles.changePhotoButtonText}>Change Photo</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.section}>
@@ -243,6 +276,29 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "800",
     marginBottom: 12,
+  },
+  photoCard: {
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderRadius: 22,
+    padding: 20,
+    alignItems: "center",
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 14,
+  },
+  changePhotoButton: {
+    backgroundColor: "#ff7a59",
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 16,
+  },
+  changePhotoButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "800",
   },
   inputCard: {
     backgroundColor: "rgba(255,255,255,0.06)",
