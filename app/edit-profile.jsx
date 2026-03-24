@@ -41,6 +41,8 @@ export default function EditProfileScreen() {
   const [emotionalRegulation, setEmotionalRegulation] = useState(
     String(user.emotionalRegulation)
   );
+  const [interests, setInterests] = useState(user.interests || []);
+  const [newInterest, setNewInterest] = useState("");
 
   const pickImage = async () => {
     try {
@@ -57,6 +59,28 @@ export default function EditProfileScreen() {
     } catch (error) {
       Alert.alert("Error", "Could not open image library.");
     }
+  };
+
+  const addInterest = () => {
+    const trimmed = newInterest.trim();
+
+    if (!trimmed) return;
+
+    const alreadyExists = interests.some(
+      (item) => item.toLowerCase() === trimmed.toLowerCase()
+    );
+
+    if (alreadyExists) {
+      Alert.alert("Duplicate", "This interest already exists.");
+      return;
+    }
+
+    setInterests((prev) => [...prev, trimmed]);
+    setNewInterest("");
+  };
+
+  const removeInterest = (item) => {
+    setInterests((prev) => prev.filter((i) => i !== item));
   };
 
   const handleSave = () => {
@@ -90,6 +114,7 @@ export default function EditProfileScreen() {
       attachment,
       intentLevel,
       emotionalRegulation: parsedEmotion,
+      interests,
     });
 
     Alert.alert("Saved", "Your profile changes have been saved.");
@@ -103,7 +128,10 @@ export default function EditProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
             <Text style={styles.backText}>‹</Text>
           </TouchableOpacity>
 
@@ -118,7 +146,10 @@ export default function EditProfileScreen() {
           <View style={styles.photoCard}>
             <Image source={{ uri: photo }} style={styles.avatar} />
 
-            <TouchableOpacity style={styles.changePhotoButton} onPress={pickImage}>
+            <TouchableOpacity
+              style={styles.changePhotoButton}
+              onPress={pickImage}
+            >
               <Text style={styles.changePhotoButtonText}>Change Photo</Text>
             </TouchableOpacity>
           </View>
@@ -219,6 +250,41 @@ export default function EditProfileScreen() {
               keyboardType="numeric"
               style={styles.input}
             />
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Interests</Text>
+
+          <View style={styles.inputCard}>
+            <View style={styles.interestInputRow}>
+              <TextInput
+                value={newInterest}
+                onChangeText={setNewInterest}
+                placeholder="Add interest"
+                placeholderTextColor="#7f8a9d"
+                style={[styles.input, styles.interestInput]}
+                onSubmitEditing={addInterest}
+                returnKeyType="done"
+              />
+
+              <TouchableOpacity style={styles.addButton} onPress={addInterest}>
+                <Text style={styles.addButtonText}>Add</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.interestsWrap}>
+              {interests.map((item, index) => (
+                <TouchableOpacity
+                  key={`${item}-${index}`}
+                  style={styles.interestPill}
+                  onPress={() => removeInterest(item)}
+                >
+                  <Text style={styles.interestText}>{item}</Text>
+                  <Text style={styles.removeText}> ✕</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
 
@@ -349,6 +415,51 @@ const styles = StyleSheet.create({
   },
   chipTextActive: {
     color: "#fff",
+  },
+  interestInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  interestInput: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  addButton: {
+    backgroundColor: "#ff7a59",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 14,
+    marginLeft: 8,
+  },
+  addButtonText: {
+    color: "#fff",
+    fontWeight: "800",
+    fontSize: 13,
+  },
+  interestsWrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  interestPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.1)",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 999,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  interestText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  removeText: {
+    color: "#ff8c73",
+    fontSize: 13,
+    fontWeight: "800",
   },
   saveButton: {
     backgroundColor: "#ff7a59",
