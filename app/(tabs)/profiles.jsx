@@ -140,7 +140,10 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>Account</Text>
 
           <View style={styles.menuCard}>
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => router.push("/privacy")}
+            >
               <Text style={styles.menuText}>Privacy Settings</Text>
               <Text style={styles.menuArrow}>›</Text>
             </TouchableOpacity>
