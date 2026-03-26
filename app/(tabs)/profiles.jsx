@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -34,6 +34,48 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user } = useProfile();
 
+  const BOOST_DURATION = 30 * 60;
+  const [boostSecondsLeft, setBoostSecondsLeft] = useState(
+    user?.boostActive ? BOOST_DURATION : 0
+  );
+
+  useEffect(() => {
+    let interval;
+
+    if (boostSecondsLeft > 0) {
+      interval = setInterval(() => {
+        setBoostSecondsLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [boostSecondsLeft]);
+
+  const isBoostActive = boostSecondsLeft > 0;
+
+  const handleBoostPress = () => {
+    if (isBoostActive) {
+      Alert.alert("Boost Active", "Your profile boost is already running.");
+      return;
+    }
+
+    setBoostSecondsLeft(BOOST_DURATION);
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -49,15 +91,15 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.profileCard}>
-          <Image source={{ uri: user.photo }} style={styles.avatar} />
+          <Image source={{ uri: user?.photo }} style={styles.avatar} />
 
           <Text style={styles.name}>
-            {user.name}, {user.age}
+            {user?.name}, {user?.age}
           </Text>
 
-          <Text style={styles.location}>{user.city}</Text>
+          <Text style={styles.location}>{user?.city}</Text>
 
-          <Text style={styles.bio}>{user.bio}</Text>
+          <Text style={styles.bio}>{user?.bio}</Text>
 
           <View style={styles.actionRow}>
             <TouchableOpacity
@@ -84,12 +126,12 @@ export default function ProfileScreen() {
           <View style={styles.statsRow}>
             <StatCard
               title="Attachment"
-              value={user.attachment}
+              value={user?.attachment}
               subtitle="Emotional style"
             />
             <StatCard
               title="Intent"
-              value={user.intentLevel}
+              value={user?.intentLevel}
               subtitle="Relationship goal"
             />
           </View>
@@ -97,7 +139,7 @@ export default function ProfileScreen() {
           <View style={styles.fullCard}>
             <Text style={styles.fullCardTitle}>Emotional Regulation</Text>
             <Text style={styles.fullCardValue}>
-              {user.emotionalRegulation}/10
+              {user?.emotionalRegulation}/10
             </Text>
             <Text style={styles.fullCardSubtitle}>
               Calm, balanced, and emotionally aware communication style.
@@ -112,15 +154,23 @@ export default function ProfileScreen() {
             <View>
               <Text style={styles.boostTitle}>Profile Boost</Text>
               <Text style={styles.boostSubtitle}>
-                {user.boostActive
-                  ? "Your profile is currently boosted."
+                {isBoostActive
+                  ? `Your boost is active. Time left: ${formatTime(
+                      boostSecondsLeft
+                    )}`
                   : "Activate boost to get more visibility."}
               </Text>
             </View>
 
-            <TouchableOpacity style={styles.boostButton}>
+            <TouchableOpacity
+              style={[
+                styles.boostButton,
+                isBoostActive && styles.boostButtonActive,
+              ]}
+              onPress={handleBoostPress}
+            >
               <Text style={styles.boostButtonText}>
-                {user.boostActive ? "Active" : "Boost"}
+                {isBoostActive ? formatTime(boostSecondsLeft) : "Boost"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -130,7 +180,7 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>Interests</Text>
 
           <View style={styles.pillsWrap}>
-            {user.interests.map((item, index) => (
+            {user?.interests?.map((item, index) => (
               <InfoPill key={index} label={item} />
             ))}
           </View>
@@ -349,6 +399,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 11,
     borderRadius: 14,
+  },
+  boostButtonActive: {
+    opacity: 0.85,
   },
   boostButtonText: {
     color: "#fff",
