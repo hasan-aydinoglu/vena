@@ -203,7 +203,10 @@ export default function ProfileScreen() {
               <Text style={styles.menuArrow}>›</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => router.push("/subscription")}
+            >
               <Text style={styles.menuText}>Subscription</Text>
               <Text style={styles.menuArrow}>›</Text>
             </TouchableOpacity>
