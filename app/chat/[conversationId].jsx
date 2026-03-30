@@ -1,419 +1,334 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   FlatList,
-  Image,
   KeyboardAvoidingView,
-  Modal,
   Platform,
-  Pressable,
+  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import {
-  addMessage,
-  getConversation,
-  markAsRead,
-  setOtherMessageWithoutUnread,
-  subscribe,
-  updateMessageReaction,
-} from "../../src/mock/chatStore";
 
-const REACTIONS = ["❤️", "😂", "🔥", "👏", "😮"];
+const MOCK_MESSAGES = [
+  {
+    id: "1",
+    text: "Hey Hasan, how’s your day going?",
+    sender: "other",
+    time: "10:12",
+  },
+  {
+    id: "2",
+    text: "Pretty good actually. Working on Vena today.",
+    sender: "me",
+    time: "10:13",
+  },
+  {
+    id: "3",
+    text: "That sounds exciting 👀",
+    sender: "other",
+    time: "10:14",
+  },
+  {
+    id: "4",
+    text: "Yes, I’m improving the chat experience now.",
+    sender: "me",
+    time: "10:15",
+  },
+];
 
-export default function ChatScreen() {
-  const { conversationId, name, photo } = useLocalSearchParams();
+export default function ConversationScreen() {
   const router = useRouter();
-
-  const [messages, setMessages] = useState([]);
+  const { conversationId, name } = useLocalSearchParams();
   const [input, setInput] = useState("");
-
-  const [isTyping, setIsTyping] = useState(false);
-  const [lastOutgoingId, setLastOutgoingId] = useState(null);
-  const [lastOutgoingStatus, setLastOutgoingStatus] = useState(null); 
-
-  const [reactionModalVisible, setReactionModalVisible] = useState(false);
-  const [selectedMsgId, setSelectedMsgId] = useState(null);
-
+  const [messages, setMessages] = useState(MOCK_MESSAGES);
   const listRef = useRef(null);
-  const typingTimerRef = useRef(null);
-  const statusTimersRef = useRef([]);
 
-  const cid = useMemo(() => String(conversationId || ""), [conversationId]);
+  const chatTitle = useMemo(() => {
+    if (typeof name === "string" && name.trim()) return name;
+    return "Chat";
+  }, [name]);
 
-  useEffect(() => {
-    if (cid) markAsRead(cid);
+  const handleSend = () => {
+    const trimmed = input.trim();
+    if (!trimmed) return;
 
-    const unsub = subscribe(() => {
-      setMessages(getConversation(cid));
-    });
-
-    setMessages(getConversation(cid));
-    return () => unsub();
-  }, [cid]);
-
-  useEffect(() => {
-    return () => {
-      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
-      statusTimersRef.current.forEach((t) => clearTimeout(t));
-      statusTimersRef.current = [];
-    };
-  }, []);
-
-  const scrollToEnd = () => {
-    setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
-  };
-
-  const setOutgoingStatusTimers = () => {
-    statusTimersRef.current.forEach((t) => clearTimeout(t));
-    statusTimersRef.current = [];
-
-    statusTimersRef.current.push(
-      setTimeout(() => setLastOutgoingStatus("Delivered"), 400)
-    );
-    statusTimersRef.current.push(
-      setTimeout(() => setLastOutgoingStatus("Seen"), 1800)
-    );
-  };
-
-  const simulateOtherUserReply = (yourText) => {
-    setIsTyping(true);
-    if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
-
-    typingTimerRef.current = setTimeout(() => {
-      setIsTyping(false);
-
-      const reply = {
-        id: `o-${Date.now()}`,
-        sender: "other",
-        text: yourText.length > 18 ? "Interesting 🙂 Tell me more!" : "Nice! 😊",
-        reaction: null,
-      };
-
-      setOtherMessageWithoutUnread(cid, reply);
-
-      if (lastOutgoingId) setLastOutgoingStatus("Seen");
-      scrollToEnd();
-    }, 1200);
-  };
-
-  const sendMessage = () => {
-    const text = input.trim();
-    if (!text) return;
-
-    const msg = {
-      id: `me-${Date.now()}`,
+    const newMessage = {
+      id: Date.now().toString(),
+      text: trimmed,
       sender: "me",
-      text,
-      reaction: null,
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     };
 
-    addMessage(cid, msg);
-
+    const updatedMessages = [...messages, newMessage];
+    setMessages(updatedMessages);
     setInput("");
-    setLastOutgoingId(msg.id);
-    setLastOutgoingStatus("Sent");
-    setOutgoingStatusTimers();
-    scrollToEnd();
 
-    simulateOtherUserReply(text);
+    setTimeout(() => {
+      listRef.current?.scrollToEnd({ animated: true });
+    }, 100);
   };
 
-  const openReactionPicker = (msgId) => {
-    setSelectedMsgId(msgId);
-    setReactionModalVisible(true);
-  };
-
-  
-  const setReactionOnMessage = (emoji) => {
-    if (!selectedMsgId) return;
-    updateMessageReaction(cid, selectedMsgId, emoji); 
-    setReactionModalVisible(false);
-    setSelectedMsgId(null);
-  };
-
-  
-  const clearReaction = () => {
-    if (!selectedMsgId) return;
-    updateMessageReaction(cid, selectedMsgId, null); 
-    setReactionModalVisible(false);
-    setSelectedMsgId(null);
-  };
-
-  const renderItem = ({ item }) => {
-    const isMe = item.sender === "me";
-    const isLastOutgoing = isMe && item.id === lastOutgoingId;
+  const renderMessage = ({ item }) => {
+    const isMine = item.sender === "me";
 
     return (
-      <View style={{ marginBottom: item.reaction ? 2 : isLastOutgoing ? 2 : 6 }}>
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onLongPress={() => openReactionPicker(item.id)}
-          delayLongPress={250}
+      <View
+        style={[
+          styles.messageRow,
+          isMine ? styles.myMessageRow : styles.otherMessageRow,
+        ]}
+      >
+        <View
+          style={[
+            styles.messageBubble,
+            isMine ? styles.myMessageBubble : styles.otherMessageBubble,
+          ]}
         >
-          <View
+          <Text
             style={[
-              styles.bubble,
-              isMe ? styles.bubbleMe : styles.bubbleThem,
+              styles.messageText,
+              isMine ? styles.myMessageText : styles.otherMessageText,
             ]}
           >
-            <Text
-              style={[
-                styles.msgText,
-                isMe ? styles.msgTextMe : styles.msgTextThem,
-              ]}
-            >
-              {item.text}
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        {item.reaction ? (
-          <View
+            {item.text}
+          </Text>
+          <Text
             style={[
-              styles.reactionChip,
-              isMe ? styles.reactionChipMe : styles.reactionChipThem,
+              styles.messageTime,
+              isMine ? styles.myMessageTime : styles.otherMessageTime,
             ]}
           >
-            <Text style={{ fontSize: 14 }}>{item.reaction}</Text>
-          </View>
-        ) : null}
-
-        {isLastOutgoing && lastOutgoingStatus && (
-          <Text style={styles.statusText}>{lastOutgoingStatus}</Text>
-        )}
+            {item.time}
+          </Text>
+        </View>
       </View>
     );
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.root}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={80}
-    >
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>←</Text>
-        </TouchableOpacity>
-
-        {photo ? <Image source={{ uri: photo }} style={styles.avatar} /> : null}
-
-        <View style={{ flex: 1 }}>
-          <Text style={styles.headerName} numberOfLines={1}>
-            {name || "Match"}
-          </Text>
-          {isTyping ? (
-            <Text style={styles.typingText}>typing…</Text>
-          ) : (
-            <Text style={styles.subText}>online</Text>
-          )}
-        </View>
-      </View>
-
-      <FlatList
-        ref={listRef}
-        data={messages}
-        keyExtractor={(i) => String(i.id)}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingHorizontal: 12, paddingVertical: 10 }}
-        onContentSizeChange={scrollToEnd}
-      />
-
-      <View style={styles.inputRow}>
-        <TextInput
-          style={styles.input}
-          value={input}
-          onChangeText={setInput}
-          placeholder="Mesaj yaz..."
-          placeholderTextColor="#999"
-        />
-        <TouchableOpacity
-          style={styles.sendBtn}
-          onPress={sendMessage}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.sendText}>Gönder</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Modal
-        transparent
-        visible={reactionModalVisible}
-        animationType="fade"
-        onRequestClose={() => setReactionModalVisible(false)}
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setReactionModalVisible(false)}
-        >
-          <Pressable style={styles.reactionPanel} onPress={() => {}}>
-            <Text style={styles.reactionTitle}>React</Text>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>‹</Text>
+          </TouchableOpacity>
 
-            <View style={styles.reactionRow}>
-              {REACTIONS.map((r) => (
-                <TouchableOpacity
-                  key={r}
-                  style={styles.reactionBtn}
-                  onPress={() => setReactionOnMessage(r)}
-                >
-                  <Text style={{ fontSize: 22 }}>{r}</Text>
-                </TouchableOpacity>
-              ))}
+          <View style={styles.headerCenter}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>
+                {chatTitle?.charAt(0)?.toUpperCase() || "C"}
+              </Text>
             </View>
+            <View>
+              <Text style={styles.headerName}>{chatTitle}</Text>
+              <Text style={styles.headerStatus}>Online now</Text>
+            </View>
+          </View>
 
-            <TouchableOpacity onPress={clearReaction} style={styles.clearBtn}>
-              <Text style={styles.clearText}>Remove reaction</Text>
-            </TouchableOpacity>
-          </Pressable>
-        </Pressable>
-      </Modal>
-    </KeyboardAvoidingView>
+          <TouchableOpacity style={styles.moreButton}>
+            <Text style={styles.moreButtonText}>⋯</Text>
+          </TouchableOpacity>
+        </View>
+
+        <FlatList
+          ref={listRef}
+          data={messages}
+          keyExtractor={(item) => item.id}
+          renderItem={renderMessage}
+          contentContainerStyle={styles.messagesContent}
+          showsVerticalScrollIndicator={false}
+          onContentSizeChange={() =>
+            listRef.current?.scrollToEnd({ animated: true })
+          }
+        />
+
+        <View style={styles.inputBar}>
+          <TextInput
+            style={styles.input}
+            placeholder="Type a message..."
+            placeholderTextColor="#94a3b8"
+            value={input}
+            onChangeText={setInput}
+            multiline
+          />
+
+          <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+            <Text style={styles.sendButtonText}>Send</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#fff" },
-
+  container: {
+    flex: 1,
+    backgroundColor: "#0b0f1a",
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#eee",
-    backgroundColor: "#fff",
-    gap: 10,
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.06)",
   },
-  backBtn: { paddingRight: 4, paddingVertical: 6 },
-  backText: { fontSize: 24 },
-
-  avatar: { width: 44, height: 44, borderRadius: 14 },
-  headerName: { fontSize: 18, fontWeight: "700" },
-  typingText: { fontSize: 12, color: "#4b6cff", marginTop: 2, fontWeight: "600" },
-  subText: { fontSize: 12, color: "#888", marginTop: 2 },
-
-  bubble: {
-    maxWidth: "78%",
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 14,
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  bubbleMe: {
-    alignSelf: "flex-end",
-    backgroundColor: "#4b6cff",
-    borderBottomRightRadius: 3,
+  backButtonText: {
+    color: "#fff",
+    fontSize: 26,
+    fontWeight: "700",
+    marginTop: -2,
   },
-  bubbleThem: {
-    alignSelf: "flex-start",
-    backgroundColor: "#f1f1f1",
-    borderBottomLeftRadius: 3,
-  },
-
-  msgText: { fontSize: 15 },
-  msgTextMe: { color: "#fff", fontWeight: "500" },
-  msgTextThem: { color: "#222", fontWeight: "500" },
-
-  reactionChip: {
-    marginTop: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#eee",
-    alignSelf: "flex-start",
-  },
-  reactionChipMe: {
-    alignSelf: "flex-end",
-    marginRight: 6,
-  },
-  reactionChipThem: {
-    alignSelf: "flex-start",
-    marginLeft: 6,
-  },
-
-  statusText: {
-    alignSelf: "flex-end",
-    marginTop: 3,
-    marginRight: 4,
-    fontSize: 11,
-    color: "#888",
-  },
-
-  inputRow: {
+  headerCenter: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#eee",
-    backgroundColor: "#fff",
-    gap: 8,
+    marginHorizontal: 12,
+  },
+  avatar: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: "#ff7a59",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  avatarText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  headerName: {
+    color: "#fff",
+    fontSize: 17,
+    fontWeight: "800",
+  },
+  headerStatus: {
+    color: "#8fbf9f",
+    fontSize: 13,
+    marginTop: 2,
+  },
+  moreButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  moreButtonText: {
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "700",
+  },
+  messagesContent: {
+    paddingHorizontal: 14,
+    paddingVertical: 18,
+    paddingBottom: 24,
+  },
+  messageRow: {
+    marginBottom: 12,
+    flexDirection: "row",
+  },
+  myMessageRow: {
+    justifyContent: "flex-end",
+  },
+  otherMessageRow: {
+    justifyContent: "flex-start",
+  },
+  messageBubble: {
+    maxWidth: "78%",
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 9,
+    borderRadius: 18,
+  },
+  myMessageBubble: {
+    backgroundColor: "#ff7a59",
+    borderBottomRightRadius: 6,
+  },
+  otherMessageBubble: {
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderBottomLeftRadius: 6,
+  },
+  messageText: {
+    fontSize: 15,
+    lineHeight: 21,
+    marginBottom: 6,
+  },
+  myMessageText: {
+    color: "#fff",
+  },
+  otherMessageText: {
+    color: "#e2e8f0",
+  },
+  messageTime: {
+    fontSize: 11,
+    alignSelf: "flex-end",
+  },
+  myMessageTime: {
+    color: "rgba(255,255,255,0.82)",
+  },
+  otherMessageTime: {
+    color: "#94a3b8",
+  },
+  inputBar: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === "ios" ? 18 : 14,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.06)",
+    backgroundColor: "#0b0f1a",
   },
   input: {
     flex: 1,
-    backgroundColor: "#f4f4f4",
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
+    minHeight: 48,
+    maxHeight: 120,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    color: "#fff",
     fontSize: 15,
+    marginRight: 10,
   },
-  sendBtn: {
-    backgroundColor: "#000",
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-  },
-  sendText: { color: "#fff", fontWeight: "700", fontSize: 14 },
-
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.35)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 18,
-  },
-  reactionPanel: {
-    width: "100%",
-    maxWidth: 360,
-    backgroundColor: "#fff",
+  sendButton: {
+    backgroundColor: "#ff7a59",
     borderRadius: 16,
-    padding: 14,
-  },
-  reactionTitle: {
-    fontSize: 16,
-    fontWeight: "800",
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  reactionRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 10,
-    paddingHorizontal: 6,
-    paddingBottom: 10,
-  },
-  reactionBtn: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
-    backgroundColor: "#f4f4f4",
+    paddingHorizontal: 18,
+    paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
   },
-  clearBtn: {
-    marginTop: 6,
-    paddingVertical: 10,
-    borderRadius: 12,
-    backgroundColor: "#ffe8f0",
-    alignItems: "center",
-  },
-  clearText: {
-    color: "#ff2e63",
+  sendButtonText: {
+    color: "#fff",
+    fontSize: 14,
     fontWeight: "800",
   },
 });
